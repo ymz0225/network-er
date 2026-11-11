@@ -3,327 +3,356 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#070d18">
+<meta name="theme-color" content="#F4F7FB">
 <title>网络急诊室 · Network ER</title>
 <style>
   :root{
-    --bg:#070d18; --bg2:#0a1524; --panel:#0d1929; --panel2:#101f33;
-    --line:#1d3248; --line2:#274a68;
-    --txt:#e7f0ff; --dim:#8ea6c4; --dim2:#5f7a9a;
-    --cyan:#3ddcff; --green:#3ee08a; --amber:#ffc857; --red:#ff5f6d;
-    --mono:Consolas,"Cascadia Mono",Menlo,monospace;
+    --bg:#F4F7FB; --card:#FFFFFF; --ink:#1E2C3C; --body:#3D4F63; --muted:#7C8B9D;
+    --line:#E4EAF2; --line2:#D3DFEC; --blue:#2F6FEB; --blue-dark:#1E56C8; --soft:#EEF4FE;
+    --green:#188A5E; --green-bg:#F2FBF7; --red:#C94A4A; --red-bg:#FFF6F6;
+    --amber:#A86A12; --amber-bg:#FFFBF1; --mono:Consolas,"Cascadia Mono",Menlo,monospace;
+    --shadow:0 1px 2px rgba(17,38,66,.04), 0 8px 24px rgba(17,38,66,.05);
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  [hidden]{display:none!important}
   html,body{margin:0;padding:0}
   body{
-    background:
-      radial-gradient(1200px 600px at 15% -10%, #10233c 0%, transparent 60%),
-      radial-gradient(900px 500px at 100% 0%, #0d2a3a 0%, transparent 55%),
-      var(--bg);
-    color:var(--txt);
+    background:var(--bg);color:var(--body);
     font-family:"Microsoft YaHei","PingFang SC",system-ui,-apple-system,sans-serif;
     height:100dvh;display:flex;flex-direction:column;overflow:hidden;
   }
-  /* ---------- header ---------- */
-  header{display:flex;align-items:center;gap:14px;padding:14px 18px 12px;flex-wrap:wrap}
-  .brand{display:flex;align-items:center;gap:10px;margin-right:auto}
-  .logo{
-    width:34px;height:34px;border-radius:9px;flex:none;
-    background:linear-gradient(145deg,#1b4a63,#0f2436);
-    border:1px solid #2f6e8c;display:grid;place-items:center;
-    box-shadow:0 0 18px rgba(61,220,255,.18);
+  .zh{display:block}
+  .en{display:block;font-size:10.5px;line-height:1.35;color:var(--muted);font-weight:400;margin-top:2px;letter-spacing:.15px}
+  .en-inline{font-style:normal;font-size:10px;color:var(--muted);font-weight:400}
+
+  /* ---------------- header ---------------- */
+  header{
+    background:var(--card);border-bottom:1px solid var(--line);
+    display:flex;align-items:center;gap:16px;padding:11px 20px;flex-wrap:wrap;
   }
-  .logo svg{width:19px;height:19px}
-  h1{font-size:17px;margin:0;letter-spacing:.5px;font-weight:700}
-  .sub{font-size:11px;color:var(--dim2);margin-top:2px}
+  .brand{display:flex;align-items:center;gap:10px;margin-right:auto;min-width:0}
+  .mark{
+    width:36px;height:36px;border-radius:10px;flex:none;background:var(--soft);
+    border:1px solid #D6E4FA;display:grid;place-items:center;
+  }
+  .mark svg{width:19px;height:19px}
+  h1{font-size:16px;margin:0;color:var(--ink);letter-spacing:.2px;white-space:nowrap}
+  h1 span{font-size:11px;color:var(--muted);font-weight:500;margin-left:6px;letter-spacing:.3px}
+  .sub{font-size:10.5px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .stats{display:flex;gap:8px;flex-wrap:wrap}
-  .chip{
-    display:flex;align-items:center;gap:7px;padding:6px 11px;border-radius:9px;
-    background:var(--panel);border:1px solid var(--line);font-size:12px;color:var(--dim);
-    min-width:74px;
+  .stat{
+    background:#F8FAFD;border:1px solid var(--line);border-radius:8px;
+    padding:5px 10px;display:flex;align-items:baseline;gap:6px;min-width:78px;
   }
-  .chip b{color:var(--txt);font-family:var(--mono);font-size:14px;font-weight:700}
-  .chip .max{font-style:normal;font-family:var(--mono);font-size:10px;color:var(--dim2);margin-left:-2px}
-  .chip.hot b{color:var(--amber)}
-  button.ghost{
-    background:var(--panel);border:1px solid var(--line);color:var(--dim);
-    padding:7px 12px;border-radius:9px;font-size:12px;cursor:pointer;font-family:inherit;
+  .stat .k{font-size:10px;color:var(--muted);line-height:1.2}
+  .stat .k i{display:block;font-style:normal;font-size:9px;color:#9AA8B8;margin-top:1px}
+  .stat b{font-family:var(--mono);font-size:15px;color:var(--ink);font-weight:700}
+  .stat em{font-style:normal;font-size:9.5px;color:#9AA8B8}
+  .iconbtn{
+    width:32px;height:32px;border-radius:8px;border:1px solid var(--line);
+    background:#F8FAFD;color:var(--muted);cursor:pointer;font-size:15px;flex:none;
   }
-  button.ghost:hover{border-color:var(--line2);color:var(--txt)}
-  /* ---------- layout ---------- */
+  .iconbtn:hover{color:var(--ink);border-color:var(--line2)}
+
+  /* ---------------- layout ---------------- */
   main{
-    flex:1;min-height:0;display:grid;grid-template-columns:1.24fr .98fr;gap:16px;
-    padding:0 18px 12px;
+    flex:1;min-height:0;display:grid;grid-template-columns:1.06fr .94fr;
+    gap:14px;padding:14px 20px;width:100%;
   }
   main>*{min-width:0}
-  .card{
-    background:linear-gradient(180deg,rgba(16,31,51,.92),rgba(10,21,36,.92));
-    border:1px solid var(--line);border-radius:14px;position:relative;overflow:hidden;
-    min-width:0;
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);min-width:0}
+  .stage{display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  .cardhead{
+    display:flex;align-items:center;gap:8px;padding:9px 14px;border-bottom:1px solid var(--line);
+    font-size:11px;color:var(--muted);
   }
-  .card::before{
-    content:"";position:absolute;inset:0;pointer-events:none;
-    background:linear-gradient(120deg,rgba(61,220,255,.05),transparent 40%);
-  }
-  /* ---------- stage ---------- */
-  .stage{display:flex;flex-direction:column;min-height:0}
-  .stagehead{
-    display:flex;align-items:center;gap:8px;padding:10px 14px;
-    border-bottom:1px solid var(--line);font-size:11px;color:var(--dim2);
-    letter-spacing:1px;text-transform:uppercase;
-  }
-  .dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
-  .pan{display:none;margin-left:auto;font-size:10px;color:#5f7a9a;letter-spacing:0;text-transform:none}
+  .cardhead .dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
+  .cardhead .dot.cli{background:var(--blue)}
+  .pan{display:none;margin-left:auto;font-size:10px;color:#9AA8B8}
+  .stagewrap{position:relative;flex:1;min-height:0;display:flex;min-width:0}
+  .stagewrap .stagebody{flex:1;min-width:0}
+  .edge{display:none}
   .stagebody{
-    flex:1;min-height:0;display:grid;place-items:center;padding:6px;position:relative;
-    background-image:radial-gradient(circle at 1px 1px, rgba(90,145,195,.13) 1px, transparent 0);
-    background-size:22px 22px;
-  }
-  .stagebody::after{
-    content:"";position:absolute;inset:0;pointer-events:none;
-    background:radial-gradient(120% 85% at 50% 50%, transparent 68%, rgba(7,13,24,.62) 100%);
+    flex:1;min-height:0;display:grid;place-items:center;padding:6px;
+    background-color:#FAFCFF;
+    background-image:radial-gradient(circle at 1px 1px, #E3EBF5 1px, transparent 0);
+    background-size:20px 20px;
   }
   svg#topo{width:100%;height:100%;max-height:100%;display:block}
   .legend{
     display:flex;justify-content:space-between;gap:10px;align-items:center;
-    padding:8px 14px;border-top:1px solid var(--line);font-size:11px;color:var(--dim2);
+    padding:7px 14px;border-top:1px solid var(--line);font-size:10.5px;color:var(--muted);
+    background:#FAFCFF;
   }
-  .legend em{font-style:normal;display:flex;align-items:center;gap:6px}
-  .legend em i{
-    width:9px;height:9px;border-radius:3px;border:1.5px solid var(--red);
-    box-shadow:0 0 7px rgba(255,95,109,.5);display:inline-block;
-  }
+  .legend .sw{display:inline-block;width:9px;height:9px;border-radius:3px;border:1.5px solid var(--red);margin-right:5px;vertical-align:-1px}
   .legend kbd{
-    font-family:var(--mono);font-size:10px;color:#7fa0c0;background:#0c1a2a;
-    border:1px solid var(--line);border-radius:4px;padding:1px 4px;margin:0 1px;
+    font-family:var(--mono);font-size:9.5px;color:#5C7188;background:#fff;
+    border:1px solid var(--line2);border-radius:4px;padding:1px 4px;margin:0 1px;
   }
-  .scene{display:none}
-  .scene.on{display:block}
-  .link{stroke:#26466a;stroke-width:3;stroke-linecap:round}
-  .link.thin{stroke-width:2.4}
-  .node rect{fill:#0e1c2e;stroke:#2a4b6c;stroke-width:1.4;transition:.25s}
-  .node .nm{fill:#dbe9ff;font-size:17px;font-weight:700;text-anchor:middle;letter-spacing:.5px}
-  .node .ip{fill:#6f8aab;font-size:12px;text-anchor:middle;font-family:var(--mono)}
-  .node.alert rect{stroke:var(--red);fill:#2a1219}
-  .node.alert{animation:beat 1.25s ease-in-out infinite}
-  @keyframes beat{0%,100%{opacity:1}50%{opacity:.55}}
-  .lbl{fill:#4f6c8d;font-size:11px;text-anchor:middle;font-family:var(--mono)}
-  .port{fill:#3c5c7d;font-size:9px;text-anchor:middle;font-family:var(--mono)}
-  /* ---------- case panel ---------- */
-  .panel{display:flex;flex-direction:column;min-height:0;overflow-y:auto;overflow-x:hidden}
-  .panel::after{
-    content:"NETWORK ER";position:absolute;right:12px;bottom:6px;pointer-events:none;
-    font-size:38px;font-weight:800;letter-spacing:3px;color:rgba(90,150,200,.055);
+  .scene{display:none}.scene.on{display:block}
+  .link{stroke:#CFDCEA;stroke-width:2.6;stroke-linecap:round}
+  .link.thin{stroke-width:2}
+  .node rect{fill:#FFFFFF;stroke:#D6E1EE;stroke-width:1.2;transition:.2s}
+  .node .nm{fill:#22364D;font-size:16px;font-weight:700;text-anchor:middle;letter-spacing:.3px}
+  .node .ip{fill:#8194A8;font-size:11px;text-anchor:middle;font-family:var(--mono)}
+  .node.alert rect{stroke:var(--red);fill:#FFF7F7}
+  .node.alert{animation:beat 1.4s ease-in-out infinite}
+  @keyframes beat{0%,100%{opacity:1}50%{opacity:.62}}
+  .lbl{fill:#93A4B6;font-size:10.5px;text-anchor:middle;font-family:var(--mono)}
+  .port{fill:#A6B5C6;font-size:9px;text-anchor:middle;font-family:var(--mono)}
+
+  /* ---------------- ticket ---------------- */
+  .ticket{overflow-y:auto;overscroll-behavior:contain;padding:14px 16px 16px}
+  .meta{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:11px;color:var(--muted)}
+  .prio{font-family:var(--mono);font-size:10px;font-weight:700;padding:2px 6px;border-radius:5px;border:1px solid}
+  .prio.p1{color:#B23B3B;border-color:#F0C9C9;background:#FFF5F5}
+  .prio.p2{color:#A86A12;border-color:#F1DFC0;background:#FFFBF1}
+  .prio.p3{color:#2F6FEB;border-color:#D3E2FB;background:#F2F7FF}
+  .meta .tid{font-family:var(--mono);font-size:10.5px;color:#5C7188}
+  .meta .site{font-size:11px;color:var(--body)}
+  .sep{color:#C3CEDB;margin:0 3px}
+  .meta2{font-size:10.5px;color:var(--muted);margin-top:5px;line-height:1.6}
+  .meta2 span{margin-right:8px}
+  .tag{
+    display:inline-block;margin:8px 0 7px;padding:2px 8px;border-radius:5px;
+    background:var(--soft);border:1px solid #D9E6FA;color:#2F6FEB;font-size:10.5px;
   }
-  .ptop{padding:12px 16px 0}
-  .meta{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--dim2);flex-wrap:wrap}
-  .prio{
-    font-family:var(--mono);font-size:10px;font-weight:700;padding:2px 6px;border-radius:5px;
-    border:1px solid var(--line2);
-  }
-  .prio.p1{color:#ff9aa2;border-color:rgba(255,95,109,.5);background:rgba(255,95,109,.12)}
-  .prio.p2{color:#ffd18a;border-color:rgba(255,200,87,.42);background:rgba(255,200,87,.09)}
-  .prio.p3{color:#9fc4e8;border-color:#2a4b6c;background:#122437}
-  .meta .id{font-family:var(--mono);font-size:10.5px;color:#7fa8cc;letter-spacing:.2px}
-  .meta2{font-size:10.5px;color:#6b86a3;margin:5px 0 0}
-  .tagg{margin:7px 0 8px}
-  .tagx{
-    padding:3px 8px;border-radius:6px;background:rgba(61,220,255,.1);
-    border:1px solid rgba(61,220,255,.25);color:#7fe4ff;font-size:10.5px;
-  }
-  .ptitle{font-size:15px;font-weight:700;line-height:1.45;margin:0 0 2px}
-  /* ---------- evidence ---------- */
-  .evs{display:flex;flex-direction:column;gap:8px;margin-top:9px}
-  .ev{border:1px solid var(--line);border-radius:9px;overflow:hidden;background:#08111d}
+  .tag .en-inline{color:#6D8FC4;margin-left:4px}
+  .titlebar{display:flex;align-items:flex-start;gap:8px;justify-content:space-between}
+  .titlebar .title{flex:1;min-width:0}
+  .titlebar .actions{flex:none;display:flex;gap:5px;margin-top:1px;flex-wrap:wrap;justify-content:flex-end}
+  .title{margin:0 0 2px;font-size:16px;line-height:1.4;color:var(--ink);font-weight:700}
+  .title .en{font-size:11px;margin-top:2px}
+  .evs{display:flex;flex-direction:column;gap:6px;margin-top:7px}
+  .ev{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#F8FAFD}
   .evsrc{
-    padding:5px 10px;font-size:10px;color:#7fa8cc;background:#0b1828;
-    border-bottom:1px solid var(--line);font-family:var(--mono);letter-spacing:.3px;
+    padding:4px 9px;font-size:9.5px;color:#5C7188;background:#F1F5FA;
+    border-bottom:1px solid var(--line);font-family:var(--mono);
   }
   .ev pre{
-    margin:0;padding:8px 10px;font-family:var(--mono);font-size:11px;line-height:1.55;
-    color:#a9c6e2;white-space:pre;overflow:auto;max-height:150px;
+    margin:0;padding:6px 9px;font-family:var(--mono);font-size:10px;line-height:1.48;
+    color:#33475B;white-space:pre;overflow:auto;max-height:96px;
   }
   .note{
-    margin:9px 0 0;padding:8px 10px;border-left:2px solid var(--amber);
-    background:rgba(255,200,87,.06);border-radius:0 8px 8px 0;
-    font-size:11.5px;line-height:1.6;color:#c9b98f;
+    margin:7px 0 0;padding:6px 8px;border-left:2px solid #E2B25A;background:var(--amber-bg);
+    border-radius:0 6px 6px 0;font-size:10.5px;line-height:1.5;color:#6E5A34;
   }
-  .note b{display:block;font-size:10px;color:#a8915f;font-weight:600;margin-bottom:2px;letter-spacing:.5px}
-  /* ---------- CLI ---------- */
-  .goalbox{
-    margin-top:9px;border:1px solid #24405c;background:#0b1a2b;border-radius:9px;padding:8px 10px;
-  }
-  .goalbox .row{display:flex;gap:8px;font-size:11px;line-height:1.65}
-  .goalbox .row+.row{margin-top:3px}
-  .goalbox b{flex:none;color:#7fa8cc;font-weight:600;font-size:10.5px;padding-top:1px}
-  .goalbox span{color:#cfe2f5}
-  .goalbox code{color:#8ff0c0;font-family:var(--mono);font-size:10.5px;white-space:pre-wrap;word-break:break-word}
-  .cliterm{margin-top:9px}
-  .termout{
-    height:128px;overflow-y:auto;padding:8px 10px;background:#08111d;
-    font-family:var(--mono);font-size:11px;line-height:1.6;color:#a9c6e2;
-    white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;
-  }
-  .termout .cl{color:#5fe6ff}
-  .termout .er{color:#ff7b87}
-  .termout .ok{color:#6ff0a8}
-  .termin{display:flex;align-items:center;gap:6px;padding:7px 8px;border-top:1px solid var(--line);background:#0a1420}
-  .termin .ps{font-family:var(--mono);font-size:11px;color:#5fe6ff;flex:none}
-  .termin input{
-    flex:1;min-width:0;background:transparent;border:0;outline:0;color:#e7f0ff;
-    font-family:var(--mono);font-size:11.5px;padding:3px 0;
-  }
-  .termin input::placeholder{color:#4f6c8d}
-  .termin button{
-    flex:none;padding:4px 12px;border-radius:6px;cursor:pointer;font-family:inherit;
-    font-size:11px;font-weight:700;color:#bff1ff;background:#153a52;border:1px solid #2d6f8c;
-  }
-  .termin button:disabled{opacity:.45;cursor:default}
-  /* ---------- options ---------- */
-  .opts{padding:10px 16px 4px;display:flex;flex-direction:column;gap:7px;min-height:0}
+  .note b{display:block;font-size:10px;color:#9A7A3A;font-weight:600;margin-bottom:2px}
+  .note .en{color:#93794C}
+
+  /* ---------------- options ---------------- */
+  .opts{display:flex;flex-direction:column;gap:6px;margin-top:10px}
   .opt{
-    display:flex;align-items:flex-start;gap:10px;text-align:left;width:100%;
-    padding:9px 11px;border-radius:9px;cursor:pointer;font-family:inherit;
-    background:var(--panel2);border:1px solid var(--line);color:var(--txt);
-    font-size:12.5px;line-height:1.5;transition:.16s;
+    display:flex;align-items:flex-start;gap:9px;width:100%;text-align:left;
+    padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:#fff;
+    color:var(--body);font-family:inherit;font-size:12px;line-height:1.45;cursor:pointer;transition:.15s;
   }
-  .opt:hover:not(.dis){border-color:var(--line2);transform:translateX(2px);background:#132741}
+  .opt:hover:not(.dis){border-color:#BCD3F2;background:#FAFCFF}
   .opt b{
     flex:none;width:20px;height:20px;border-radius:5px;display:grid;place-items:center;
-    background:#173049;color:#7fb6d6;font-size:11px;font-family:var(--mono);
+    background:#F1F5FA;color:#6C8299;font-size:10.5px;font-family:var(--mono);margin-top:1px;
   }
-  .opt.ok{border-color:var(--green);background:rgba(62,224,138,.1)}
-  .opt.ok b{background:var(--green);color:#04140c}
-  .opt.bad{border-color:var(--red);background:rgba(255,95,109,.1)}
-  .opt.bad b{background:var(--red);color:#1a0508}
-  .opt.dis{cursor:default;opacity:.92}
-  /* ---------- feedback ---------- */
-  .fb{
-    margin:10px 16px 12px;padding:11px 12px;border-radius:10px;border:1px solid var(--line);
-    background:#0b1826;animation:up .22s ease-out;
+  .opt .en{margin-top:1px}
+  .opt.ok{border-color:#9FD9BE;background:var(--green-bg)}
+  .opt.ok b{background:var(--green);color:#fff}
+  .opt.bad{border-color:#EDB9B9;background:var(--red-bg)}
+  .opt.bad b{background:var(--red);color:#fff}
+  .opt.dis{cursor:default}
+
+  /* ---------------- CLI ---------------- */
+  .cli{margin-top:9px}
+  .goal{border:1px solid var(--line);background:#F8FAFD;border-radius:8px;padding:6px 8px}
+  .goal .row{display:flex;gap:7px;font-size:10.5px;line-height:1.45}
+  .goal .row+.row{margin-top:3px}
+  .goal b{flex:none;font-size:9.5px;color:#6C8299;font-weight:600;padding-top:2px;width:58px}
+  .goal .gz{color:var(--body)}
+  .goal .ge{font-size:9.5px;color:var(--muted);margin-top:1px}
+  .goal code{font-family:var(--mono);font-size:9.5px;color:#2F6FEB;white-space:pre-wrap;word-break:break-word}
+  .term{margin-top:8px;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff}
+  .termbar{
+    display:flex;align-items:center;gap:5px;padding:5px 9px;background:#F1F5FA;
+    border-bottom:1px solid var(--line);font-size:9.5px;color:#7C8B9D;font-family:var(--mono);
   }
-  @keyframes up{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-  .fb.ok{border-color:rgba(62,224,138,.45)}
-  .fb.bad{border-color:rgba(255,95,109,.45)}
-  .fbh{font-size:12.5px;font-weight:700;margin-bottom:5px}
-  .fb.ok .fbh{color:var(--green)}.fb.bad .fbh{color:var(--red)}
-  .fb p{margin:0 0 8px;font-size:11.5px;line-height:1.65;color:#a9c0da}
-  .fbmeta{
-    display:flex;align-items:center;gap:12px;margin:-1px 0 7px;
-    font-family:var(--mono);font-size:10.5px;color:var(--dim2);
+  .termbar i{width:7px;height:7px;border-radius:50%;background:#D6DFEA}
+  .termbar span{margin-left:5px}
+  .termout{
+    height:88px;overflow-y:auto;padding:6px 9px;background:#FBFCFE;
+    font-family:var(--mono);font-size:10px;line-height:1.5;color:#4A5D72;
+    white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;
   }
-  .fbmeta i{font-style:normal;color:#ffd18a}
+  .termout .cl{color:#2F6FEB}
+  .termout .er{color:var(--red)}
+  .termout .ok{color:var(--green)}
+  .builder{margin-top:9px;border:1px solid var(--line);border-radius:8px;padding:8px;background:#FBFCFE}
+  .bhead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+  .bhead b{font-size:10.5px;color:#5C7188;font-weight:600}
+  .bhead b i{font-style:normal;font-size:9.5px;color:#9AA8B8;margin-left:4px}
+  .linkbtn{background:none;border:0;color:#6C8299;font-size:10px;cursor:pointer;font-family:inherit;padding:2px 0}
+  .linkbtn:hover{color:var(--red)}
+  .dropzone{
+    min-height:50px;border:1.5px dashed #C9D8EA;border-radius:7px;background:#fff;
+    padding:4px;display:flex;flex-direction:column;gap:4px;transition:.15s;
+  }
+  .dropzone.over{border-color:var(--blue);background:#F5F9FF}
+  .dropzone .empty{color:#A6B4C4;font-size:10.5px;text-align:center;padding:16px 6px;line-height:1.5}
+  .qitem{
+    display:flex;align-items:center;gap:6px;background:#F7FAFF;border:1px solid #DCE8F8;
+    border-left:3px solid var(--blue);border-radius:5px;padding:4px 6px;
+  }
+  .qitem .qn{
+    flex:none;width:16px;height:16px;border-radius:50%;background:var(--blue);color:#fff;
+    font-size:9px;display:grid;place-items:center;font-family:var(--mono);
+  }
+  .qitem code{flex:1;min-width:0;font-family:var(--mono);font-size:10px;color:#2B4A6E;overflow-wrap:anywhere}
+  .qitem .qx{border:0;background:none;color:#A6B4C4;font-size:14px;line-height:1;cursor:pointer;padding:0 2px}
+  .qitem .qx:hover{color:var(--red)}
+  .bank{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+  .cmdtile{
+    font-family:var(--mono);font-size:10px;line-height:1.3;color:#2B4A6E;
+    background:#fff;border:1px solid #D8E3F1;border-radius:6px;padding:5px 7px;
+    cursor:grab;text-align:left;transition:.15s;white-space:nowrap;
+  }
+  .cmdtile:hover{border-color:#A9C6EE;background:#F8FBFF}
+  .cmdtile.used{opacity:.32;cursor:default;border-style:dashed}
+  .cmdtile.dragging{opacity:.5}
+  .runrow{display:flex;align-items:center;gap:8px;margin-top:7px}
+  .buildmsg{font-size:10px;color:var(--amber);margin-top:5px;line-height:1.45}
+
+  /* ---------------- actions / feedback ---------------- */
+  .actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+  .btn{
+    border-radius:7px;padding:6px 11px;font-size:11px;font-weight:600;cursor:pointer;
+    font-family:inherit;border:1px solid var(--line2);background:#fff;color:#5C7188;
+  }
+  .btn:hover{border-color:#A9C6EE;color:var(--blue)}
+  .btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+  .btn.primary:hover{background:var(--blue-dark);color:#fff}
+  .btn:disabled{opacity:.45;cursor:default}
+  .hintbox{
+    margin-top:8px;padding:7px 9px;border:1px solid #F0E1C2;background:var(--amber-bg);
+    border-radius:6px;font-size:10.5px;line-height:1.55;color:#7A5B1E;
+  }
+  .hintbox b{display:block;font-size:10px;color:#9A7A3A;margin-bottom:2px}
+  .hintbox .en{color:#93794C}
+  .fb{margin-top:10px;border:1px solid var(--line);background:#F8FAFD;border-radius:8px;padding:9px 10px;animation:up .18s ease-out}
+  @keyframes up{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .fb.ok{border-color:#BEE7D6;background:var(--green-bg)}
+  .fb.bad{border-color:#EFC5C5;background:var(--red-bg)}
+  .fb.info{border-color:#C9DCF5;background:#F5F9FF}
+  .fbh{font-size:11.5px;font-weight:700;margin-bottom:3px;color:var(--ink)}
+  .fb.ok .fbh{color:var(--green)} .fb.bad .fbh{color:var(--red)} .fb.info .fbh{color:var(--blue)}
+  .fbmeta{font-family:var(--mono);font-size:9.5px;color:#8A99A8;margin-bottom:5px}
+  .fbmeta i{font-style:normal;color:var(--amber);margin-left:6px}
+  .fb p{margin:0 0 5px;font-size:10.5px;line-height:1.55;color:var(--body)}
+  .fb p.en{margin:0 0 7px;font-size:10px;color:var(--muted)}
   .fix{
-    display:flex;gap:8px;align-items:flex-start;background:#07101a;border:1px solid #193049;
-    border-radius:7px;padding:7px 9px;font-family:var(--mono);font-size:11px;line-height:1.6;
+    display:flex;gap:7px;align-items:flex-start;background:#fff;border:1px solid var(--line);
+    border-radius:6px;padding:6px 8px;font-family:var(--mono);font-size:10px;line-height:1.5;
   }
-  .fix span{flex:none;color:var(--dim2);font-family:inherit;font-size:10px;padding-top:1px}
-  .fix code{color:#8ff0c0;white-space:pre-wrap;word-break:break-all}
-  .footer{display:flex;align-items:center;gap:12px;padding:0 18px 14px}
-  .bars{display:flex;gap:6px;flex:1}
-  .bars i{height:4px;border-radius:2px;background:#183049;flex:1;transition:.3s}
-  .bars i.on{background:var(--cyan)}
+  .fix span{flex:none;font-family:inherit;font-size:9.5px;color:#8A99A8;padding-top:1px}
+  .fix code{color:#1E7A56;white-space:pre-wrap;word-break:break-all}
+
+  /* ---------------- footer ---------------- */
+  footer{
+    background:var(--card);border-top:1px solid var(--line);
+    display:flex;align-items:center;gap:12px;padding:8px 20px;flex-wrap:wrap;
+  }
+  .timerwrap{display:flex;align-items:center;gap:7px;min-width:112px}
+  .timerbar{width:64px;height:4px;border-radius:2px;background:#E8EEF6;overflow:hidden}
+  .timerbar>i{display:block;height:100%;background:var(--blue);width:100%;transition:width .1s linear}
+  .timerbar.warn>i{background:var(--red)}
+  .tnum{font-family:var(--mono);font-size:11px;color:var(--muted);min-width:28px;text-align:right}
+  .bars{display:flex;gap:5px;flex:1}
+  .bars i{height:4px;border-radius:2px;background:#E8EEF6;flex:1;transition:.25s}
+  .bars i.on{background:#9FC0F5}
   .bars i.ok{background:var(--green)}
   .bars i.no{background:var(--red)}
-  .timerwrap{display:flex;align-items:center;gap:8px;min-width:118px}
-  .timerbar{width:70px;height:4px;border-radius:2px;background:#183049;overflow:hidden}
-  .timerbar>i{display:block;height:100%;background:var(--cyan);width:100%}
-  .timerbar.warn>i{background:var(--red)}
-  .tnum{font-family:var(--mono);font-size:12px;color:var(--dim);min-width:30px;text-align:right}
-  .next{
-    padding:8px 16px;border-radius:9px;border:1px solid #2d6f8c;cursor:pointer;font-family:inherit;
-    background:linear-gradient(180deg,#1a4a60,#123347);color:#bff1ff;font-size:12.5px;font-weight:700;
-  }
-  .next:hover{filter:brightness(1.12)}
-  /* ---------- overlays ---------- */
+
+  /* ---------------- overlays ---------------- */
   .overlay{
-    position:fixed;inset:0;z-index:50;display:none;place-items:center;padding:20px;
-    background:rgba(4,9,16,.82);backdrop-filter:blur(6px);
+    position:fixed;inset:0;z-index:60;display:none;place-items:center;padding:18px;
+    background:rgba(23,38,58,.30);backdrop-filter:blur(4px);
   }
   .overlay.on{display:grid}
   .sheet{
-    width:min(580px,100%);max-height:88dvh;overflow:auto;border-radius:16px;
-    background:linear-gradient(180deg,#0f2135,#0a1524);border:1px solid #24405c;
-    padding:26px 26px 22px;box-shadow:0 24px 80px rgba(0,0,0,.55);
+    width:min(580px,100%);max-height:88dvh;overflow:auto;background:#fff;border:1px solid var(--line);
+    border-radius:14px;padding:24px;box-shadow:0 24px 70px rgba(17,38,66,.22);
   }
-  .sheet h2{margin:0 0 6px;font-size:19px}
-  .sheet .lead{color:var(--dim);font-size:12.5px;line-height:1.7;margin:0 0 16px}
-  .rules{display:grid;gap:9px;margin:0 0 20px}
-  .rule{display:flex;gap:10px;font-size:12.5px;line-height:1.55;color:#b8cbe3}
-  .rule b{color:var(--cyan);font-family:var(--mono);font-size:11px;padding-top:2px}
+  .sheet h2{margin:0 0 4px;font-size:18px;color:var(--ink)}
+  .sheet .lead{font-size:12px;line-height:1.65;color:var(--body);margin:0 0 14px}
+  .sheet .lead .en{margin-top:3px}
+  .rules{display:grid;gap:8px;margin:0 0 18px}
+  .rule{display:flex;gap:9px;font-size:11.5px;line-height:1.5;color:var(--body)}
+  .rule b{color:var(--blue);font-family:var(--mono);font-size:10px;padding-top:2px}
+  .rule .en{font-size:10px;margin-top:1px}
   .cta{
-    width:100%;padding:12px;border-radius:10px;border:1px solid #2f7d9c;cursor:pointer;
-    font-family:inherit;font-size:14px;font-weight:700;color:#04121a;
-    background:linear-gradient(180deg,#6ce4ff,#31b7dd);
+    width:100%;padding:10px;border-radius:8px;border:1px solid var(--blue);cursor:pointer;
+    font-family:inherit;font-size:13px;font-weight:700;color:#fff;background:var(--blue);
   }
-  .cta:hover{filter:brightness(1.06)}
-  .score{display:flex;align-items:flex-end;gap:10px;margin:6px 0 4px}
-  .score b{font-size:44px;line-height:1;font-family:var(--mono);color:var(--cyan)}
-  .score span{color:var(--dim2);font-size:12px;padding-bottom:5px}
-  .rank{color:var(--amber);font-size:13px;font-weight:700;margin-bottom:14px}
-  .mini{display:flex;gap:10px;margin-bottom:16px}
-  .mini div{flex:1;background:#0b1826;border:1px solid var(--line);border-radius:9px;padding:9px 11px}
-  .mini span{display:block;font-size:10.5px;color:var(--dim2);margin-bottom:3px}
-  .mini b{font-family:var(--mono);font-size:16px}
-  .ho{width:100%;border-collapse:collapse;margin:0 0 16px}
-  .ho th{
-    text-align:left;font-weight:600;color:var(--dim2);font-size:10.5px;
-    padding:5px 6px;border-bottom:1px solid #1c3149;
-  }
+  .cta:hover{background:var(--blue-dark)}
+  .score{display:flex;align-items:flex-end;gap:8px;margin:4px 0 2px}
+  .score b{font-size:40px;line-height:1;font-family:var(--mono);color:var(--blue)}
+  .score span{font-size:11px;color:var(--muted);padding-bottom:5px}
+  .rank{font-size:12.5px;font-weight:700;color:var(--amber);margin-bottom:12px}
+  .rank .en-inline{color:#9A7A3A;margin-left:5px}
+  .mini{display:flex;gap:8px;margin-bottom:13px}
+  .mini div{flex:1;background:#F8FAFD;border:1px solid var(--line);border-radius:7px;padding:7px 9px}
+  .mini span{display:block;font-size:9.5px;color:var(--muted);margin-bottom:2px}
+  .mini span i{font-style:normal;font-size:9px;color:#9AA8B8}
+  .mini b{font-family:var(--mono);font-size:15px;color:var(--ink)}
+  .ho{width:100%;border-collapse:collapse;margin:0 0 13px}
+  .ho th{text-align:left;font-size:9.5px;font-weight:600;color:var(--muted);padding:4px 5px;border-bottom:1px solid var(--line)}
   .ho th:last-child{text-align:right}
-  .ho td{padding:6px;border-bottom:1px dashed #16293f;font-family:var(--mono);font-size:10.5px;color:#a9c0da}
-  .ho td.v{font-family:inherit;font-size:11px}
-  .ho .okv{color:var(--green)}.ho .nov{color:var(--red)}
-  .ho td.sc{text-align:right;color:#ffd18a}
-  .review{margin:0 0 18px;max-height:180px;overflow:auto}
-  .rv{padding:9px 0;border-bottom:1px dashed #1c3149;font-size:12px;line-height:1.6}
-  .rv b{color:#ffd18a;display:block;font-size:11.5px;margin-bottom:2px}
-  .rv span{color:var(--dim)}
-  .rv em{color:#8ff0c0;font-style:normal;font-family:var(--mono);font-size:10.5px;display:block;margin-top:3px}
-  /* ---------- mobile ---------- */
-  @media(max-width:980px){
+  .ho td{padding:5px;border-bottom:1px solid #F0F4F9;font-family:var(--mono);font-size:10px;color:#5C7188}
+  .ho td.v{font-family:inherit;font-size:10.5px}
+  .ho .okv{color:var(--green)} .ho .nov{color:var(--red)} .ho .rev{color:var(--blue)}
+  .ho td.sc{text-align:right;color:var(--amber)}
+  .review{max-height:220px;overflow:auto;margin-bottom:14px}
+  .rv{padding:7px 0;border-bottom:1px dashed #E8EEF6;font-size:11px;line-height:1.55}
+  .rv b{display:block;color:var(--ink);font-size:11px;margin-bottom:2px}
+  .rv span{color:var(--muted);display:block}
+  .rv em{font-style:normal;color:#1E7A56;font-family:var(--mono);font-size:9.5px;display:block;margin-top:2px;white-space:normal;overflow-wrap:anywhere}
+  .sheet.confirm{width:min(380px,100%);padding:20px}
+  .confirm p{font-size:11.5px;line-height:1.6;color:var(--body);margin:6px 0 16px}
+  .confirm .row{display:flex;gap:8px;justify-content:flex-end}
+  .confirm .btn{padding:7px 14px}
+
+  /* ---------------- mobile ---------------- */
+  @media(max-width:900px){
     html,body{max-width:100%;overflow-x:hidden}
-    body{height:auto;min-height:100dvh;overflow-y:auto}
-    header{width:100%;padding:10px 12px;gap:8px}
-    main{grid-template-columns:1fr;min-height:auto;padding:0 12px 10px;gap:12px;width:100%}
-    .card{width:100%;max-width:100%}
+    body{height:auto;min-height:100dvh;overflow-y:auto;padding-bottom:calc(58px + env(safe-area-inset-bottom))}
+    header{padding:9px 12px;gap:8px}
     h1{font-size:15px}
     .brand{flex:1 1 0;min-width:0;margin-right:0}
     .brand>div{min-width:0;overflow:hidden}
-    .sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
-    .stats{
-      order:3;flex:1 1 100%;width:auto;display:grid;
-      grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;
-    }
-    .chip{padding:5px 6px;min-width:0;justify-content:center;gap:5px;font-size:11px}
-    .chip b{font-size:13px}
-    button.ghost{padding:6px 9px;flex:none}
+    .sub{white-space:normal;overflow:visible;text-overflow:clip;font-size:9.5px;line-height:1.35}
+    .stats{order:3;flex:1 1 100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+    .stat{min-width:0;padding:4px 6px;justify-content:center;gap:4px}
+    .stat b{font-size:13px}
+    main{grid-template-columns:1fr;height:auto;min-height:0;padding:10px 12px;gap:10px}
     .stage{min-height:auto}
-    .stagebody{
-      padding:4px;display:block;overflow-x:auto;overflow-y:hidden;
-      min-width:0;max-width:100%;-webkit-overflow-scrolling:touch;
-    }
+    .stagewrap{display:block;flex:none}
+    .edge{display:block;position:absolute;top:0;bottom:0;width:18px;pointer-events:none;z-index:2}
+    .edge.l{left:0;background:linear-gradient(90deg,#FAFCFF,rgba(250,252,255,0))}
+    .edge.r{right:0;background:linear-gradient(270deg,#FAFCFF,rgba(250,252,255,0))}
+    .titlebar{flex-wrap:wrap}
+    .titlebar .actions{width:100%;justify-content:flex-start;margin-top:4px}
+    .stagebody{padding:4px;display:block;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
     svg#topo{width:720px;max-width:none;height:auto}
-    .legend{font-size:10px;padding:7px 10px;gap:6px;flex-wrap:wrap}
-    .legend kbd{font-size:9px}
     .pan{display:block}
-    .panel{overflow:visible}
-    .opts{max-height:none;padding:10px 12px 2px}
-    .opt{font-size:12.5px;padding:10px 11px}
-    .ev pre{max-height:170px}
-    .ptop{padding:10px 12px 0}
-    .ptitle{font-size:14px}
-    .fb{margin:0 12px 10px}
-    body{padding-bottom:calc(62px + env(safe-area-inset-bottom))}
-    .footer{
-      position:fixed;left:0;right:0;bottom:0;z-index:30;
+    .legend{font-size:9.5px;padding:6px 10px;flex-wrap:wrap;gap:5px}
+    .ticket{overflow:visible;padding:11px 12px 14px}
+    .title{font-size:14.5px}
+    .ev pre{max-height:160px}
+    .opt{font-size:11.5px;padding:8px 9px}
+    .cmdtile{font-size:9.5px}
+    footer{
+      position:fixed;left:0;right:0;bottom:0;z-index:40;
       padding:8px 12px calc(8px + env(safe-area-inset-bottom));
-      background:rgba(7,13,24,.96);backdrop-filter:blur(10px);
-      border-top:1px solid var(--line);flex-wrap:wrap;gap:10px;
+      background:rgba(255,255,255,.97);backdrop-filter:blur(8px);
     }
-    .timerwrap{min-width:100px}
-    .next{margin-left:auto}
-    .sheet{padding:20px 18px 18px}
+    .timerwrap{min-width:98px}
+    .sheet{padding:19px 16px}
     .mini{flex-wrap:wrap}
     .mini div{flex:1 1 40%}
   }
@@ -333,31 +362,30 @@
 
 <header>
   <div class="brand">
-    <div class="logo" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#5fe6ff" stroke-width="1.8" stroke-linecap="round">
+    <div class="mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#2F6FEB" stroke-width="1.8" stroke-linecap="round">
         <path d="M3 12h4l2-5 3 10 2-5h7"/>
       </svg>
     </div>
     <div>
-      <h1 id="t-title">网络急诊室</h1>
-      <div class="sub" id="t-sub">GlobalTech 一线运维 · 路由故障处置</div>
+      <h1>网络急诊室<span>Network ER</span></h1>
+      <div class="sub">GlobalTech 一线运维 · 路由故障处置 / Routing incident response</div>
     </div>
   </div>
   <div class="stats">
-    <div class="chip"><span id="t-score">积分</span><b id="v-score">0</b><em class="max" id="v-max">/500</em></div>
-    <div class="chip hot" id="combo-chip"><span id="t-combo">连击</span><b id="v-combo">0</b></div>
-    <div class="chip"><span id="t-case">工单</span><b id="v-case">1/5</b></div>
+    <div class="stat"><span class="k">得分<i>Score</i></span><b id="v-score">0</b><em>/500</em></div>
+    <div class="stat"><span class="k">连击<i>Combo</i></span><b id="v-combo">0</b></div>
+    <div class="stat"><span class="k">工单<i>Ticket</i></span><b id="v-case">1/5</b></div>
   </div>
-  <button class="ghost" id="lang">EN</button>
-  <button class="ghost" id="restart">↻</button>
+  <button class="iconbtn" id="restart" title="重新开始 Restart">↻</button>
 </header>
 
 <main>
   <section class="card stage">
-    <div class="stagehead"><i class="dot"></i><span id="t-live">实时拓扑 · 故障定位中</span><span class="pan" id="t-pan"></span></div>
-    <div class="stagebody">
-      <svg id="topo" viewBox="0 0 900 430" preserveAspectRatio="xMidYMid meet">
-        <!-- ============ WAN ============ -->
+    <div class="cardhead"><span class="dot" id="v-dot"></span><span id="v-live">故障定位中 <i class="en-inline">Locating fault</i></span><span class="pan">← 拖动查看 Drag →</span></div>
+    <div class="stagewrap">
+      <div class="stagebody">
+        <svg id="topo" viewBox="0 60 900 350" preserveAspectRatio="xMidYMid meet">
         <g id="scene-wan" class="scene on">
           <line class="link" x1="134" y1="200" x2="236" y2="200"/>
           <line class="link" x1="324" y1="200" x2="436" y2="200"/>
@@ -369,40 +397,13 @@
           <text class="lbl" x="580" y="222">10.0.23.0/30</text>
           <text class="lbl" x="765" y="222">192.168.3.0/24</text>
           <text class="lbl" x="480" y="290">192.168.2.0/24</text>
-
-          <g class="node" id="n-pc1">
-            <rect x="46" y="172" width="88" height="56" rx="10"/>
-            <text class="nm" x="90" y="196">PC1</text>
-            <text class="ip" x="90" y="213">192.168.1.10</text>
-          </g>
-          <g class="node" id="n-r1">
-            <rect x="236" y="172" width="88" height="56" rx="10"/>
-            <text class="nm" x="280" y="196">R1</text>
-            <text class="ip" x="280" y="213">AR2220</text>
-          </g>
-          <g class="node" id="n-r2">
-            <rect x="436" y="172" width="88" height="56" rx="10"/>
-            <text class="nm" x="480" y="196">R2</text>
-            <text class="ip" x="480" y="213">AR2220</text>
-          </g>
-          <g class="node" id="n-r3">
-            <rect x="636" y="172" width="88" height="56" rx="10"/>
-            <text class="nm" x="680" y="196">R3</text>
-            <text class="ip" x="680" y="213">AR2220</text>
-          </g>
-          <g class="node" id="n-pc3">
-            <rect x="806" y="172" width="88" height="56" rx="10"/>
-            <text class="nm" x="850" y="196">PC3</text>
-            <text class="ip" x="850" y="213">192.168.3.10</text>
-          </g>
-          <g class="node" id="n-pc2">
-            <rect x="436" y="322" width="88" height="56" rx="10"/>
-            <text class="nm" x="480" y="346">PC2</text>
-            <text class="ip" x="480" y="363">192.168.2.10</text>
-          </g>
+          <g class="node" id="n-pc1"><rect x="46" y="172" width="88" height="56" rx="9"/><text class="nm" x="90" y="196">PC1</text><text class="ip" x="90" y="213">192.168.1.10</text></g>
+          <g class="node" id="n-r1"><rect x="236" y="172" width="88" height="56" rx="9"/><text class="nm" x="280" y="196">R1</text><text class="ip" x="280" y="213">AR2220</text></g>
+          <g class="node" id="n-r2"><rect x="436" y="172" width="88" height="56" rx="9"/><text class="nm" x="480" y="196">R2</text><text class="ip" x="480" y="213">AR2220</text></g>
+          <g class="node" id="n-r3"><rect x="636" y="172" width="88" height="56" rx="9"/><text class="nm" x="680" y="196">R3</text><text class="ip" x="680" y="213">AR2220</text></g>
+          <g class="node" id="n-pc3"><rect x="806" y="172" width="88" height="56" rx="9"/><text class="nm" x="850" y="196">PC3</text><text class="ip" x="850" y="213">192.168.3.10</text></g>
+          <g class="node" id="n-pc2"><rect x="436" y="322" width="88" height="56" rx="9"/><text class="nm" x="480" y="346">PC2</text><text class="ip" x="480" y="363">192.168.2.10</text></g>
         </g>
-
-        <!-- ============ VLAN ============ -->
         <g id="scene-vlan" class="scene">
           <line class="link" x1="164" y1="122" x2="366" y2="210"/>
           <line class="link" x1="164" y1="318" x2="366" y2="230"/>
@@ -410,111 +411,121 @@
           <text class="lbl" x="286" y="150">VLAN 10 · access</text>
           <text class="lbl" x="286" y="296">VLAN 20 · access</text>
           <text class="lbl" x="585" y="206">Trunk · 802.1Q</text>
-
-          <g class="node" id="v-pc1">
-            <rect x="76" y="94" width="88" height="56" rx="10"/>
-            <text class="nm" x="120" y="118">PC1</text>
-            <text class="ip" x="120" y="135">192.168.10.10</text>
-          </g>
-          <g class="node" id="v-pc2">
-            <rect x="76" y="290" width="88" height="56" rx="10"/>
-            <text class="nm" x="120" y="314">PC2</text>
-            <text class="ip" x="120" y="331">192.168.20.10</text>
-          </g>
-          <g class="node" id="v-sw">
-            <rect x="366" y="186" width="128" height="68" rx="10"/>
-            <text class="nm" x="430" y="214">LSW1</text>
-            <text class="ip" x="430" y="232">S5700</text>
-          </g>
-          <g class="node" id="v-ar">
-            <rect x="676" y="186" width="128" height="68" rx="10"/>
-            <text class="nm" x="740" y="212">AR1</text>
-            <text class="ip" x="740" y="230">G0/0/0.10 / .20</text>
-          </g>
+          <g class="node" id="v-pc1"><rect x="76" y="94" width="88" height="56" rx="9"/><text class="nm" x="120" y="118">PC1</text><text class="ip" x="120" y="135">192.168.10.10</text></g>
+          <g class="node" id="v-pc2"><rect x="76" y="290" width="88" height="56" rx="9"/><text class="nm" x="120" y="314">PC2</text><text class="ip" x="120" y="331">192.168.20.10</text></g>
+          <g class="node" id="v-sw"><rect x="366" y="186" width="128" height="68" rx="9"/><text class="nm" x="430" y="214">LSW1</text><text class="ip" x="430" y="232">S5700</text></g>
+          <g class="node" id="v-ar"><rect x="676" y="186" width="128" height="68" rx="9"/><text class="nm" x="740" y="212">AR1</text><text class="ip" x="740" y="230">G0/0/0.10 / .20</text></g>
         </g>
       </svg>
+      </div>
+      <i class="edge l"></i><i class="edge r"></i>
     </div>
     <div class="legend">
-      <em><i></i><span id="t-legend">红框：本单受影响的两端</span></em>
-      <span id="t-keys"><kbd>1</kbd>–<kbd>4</kbd> 选择 · <kbd>↵</kbd> 下一单</span>
+      <span><i class="sw"></i>红框＝受影响 <i class="en-inline">Affected</i></span>
+      <span id="v-keys"><kbd>1</kbd>–<kbd>4</kbd> 选择 Pick · 提示 Hint · 解析 Analysis</span>
     </div>
   </section>
 
-  <section class="card panel">
-    <div class="ptop">
-      <div class="meta">
-        <span class="prio p2" id="v-pri">P2</span>
-        <span class="id" id="v-id">INC-20261110-0000</span>
-        <span id="v-site">—</span>
-      </div>
-      <div class="meta2" id="v-meta2">—</div>
-      <div class="tagg"><span class="tagx" id="v-tag">—</span></div>
-      <h3 class="ptitle" id="v-title">—</h3>
-      <div class="evs" id="v-evs"></div>
-      <p class="note" id="v-note" style="display:none"></p>
-      <div id="v-cli" style="display:none">
-        <div class="goalbox">
-          <div class="row"><b id="t-goal">处置目标</b><span id="v-goal">—</span></div>
-          <div class="row"><b id="t-syntax">命令语法</b><code id="v-syntax">—</code></div>
-        </div>
-        <div class="term cliterm">
-          <div class="termbar"><i></i><i></i><i></i><span id="v-termhead">R3 · console</span></div>
-          <div class="termout" id="v-termout"></div>
-          <div class="termin">
-            <span class="ps" id="v-prompt">&lt;R3&gt;</span>
-            <input id="v-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="输入命令，? 查看帮助">
-            <button id="v-send">执行</button>
-          </div>
-        </div>
+  <section class="card ticket">
+    <div class="meta">
+      <span class="prio p2" id="v-pri">P2</span>
+      <span class="tid" id="v-id">INC-20261110-0000</span>
+      <span class="site" id="v-site">—</span>
+    </div>
+    <div class="meta2" id="v-meta2">—</div>
+    <div class="tag" id="v-tag">—</div>
+    <div class="titlebar">
+      <h2 class="title" id="v-title">—</h2>
+      <div class="actions">
+        <button class="btn" id="v-hint">提示 Hint</button>
+        <button class="btn" id="v-reveal">直接看解析 Show analysis</button>
       </div>
     </div>
+    <div class="hintbox" id="v-hintbox" hidden></div>
+    <div class="evs" id="v-evs"></div>
+    <div class="note" id="v-note" hidden></div>
+
+    <div class="cli" id="v-cli" hidden>
+      <div class="goal">
+        <div class="row"><b>处置目标<br>Objective</b><div><div class="gz" id="v-goal-zh">—</div><div class="ge" id="v-goal-en">—</div></div></div>
+        <div class="row"><b>命令语法<br>Syntax</b><div><code id="v-syntax-zh">—</code><div class="ge" id="v-syntax-en"></div></div></div>
+      </div>
+      <div class="builder">
+        <div class="bhead"><b>按顺序放入命令 <i>Drag / tap commands in order</i></b><button class="linkbtn" id="v-clear">清空 Clear</button></div>
+        <div class="dropzone" id="v-drop"></div>
+        <div class="bank" id="v-bank"></div>
+        <div class="runrow"><button class="btn primary" id="v-run">执行队列 Run queue</button></div>
+        <div class="buildmsg" id="v-buildmsg"></div>
+      </div>
+      <div class="term">
+        <div class="termbar"><i></i><i></i><i></i><span id="v-termhead"></span></div>
+        <div class="termout" id="v-termout"></div>
+      </div>
+    </div>
+
     <div class="opts" id="v-opts"></div>
     <div id="v-fb"></div>
   </section>
 </main>
 
-<div class="footer">
+<footer>
   <div class="timerwrap">
     <div class="timerbar" id="bar"><i id="barfill"></i></div>
     <span class="tnum" id="v-time">25s</span>
   </div>
   <div class="bars" id="v-bars"></div>
-  <button class="next" id="next" style="display:none">下一张工单 →</button>
-</div>
+  <button class="btn primary" id="next" hidden>下一张 Next</button>
+</footer>
 
 <!-- start -->
 <div class="overlay on" id="ov-start">
   <div class="sheet">
-    <h2 id="t-start-title">接单前，先看三条</h2>
-    <p class="lead" id="t-start-lead">你是 GlobalTech 网络组的值班工程师。5 张工单来自不同部门，现象、命令回显和现场备注都在工单里。</p>
+    <h2>接单前，先看四条 <span class="en-inline">Four things before you start</span></h2>
+    <p class="lead">你是 GlobalTech 网络组的值班工程师。5 张工单来自不同部门，现象、回显和现场备注都在工单里。
+      <span class="en">You are the on-call engineer at GlobalTech NOC. Five tickets are waiting, each with symptoms, CLI output and field notes.</span>
+    </p>
     <div class="rules">
-      <div class="rule"><b>01</b><span id="t-r1">每局 5 张：前 3 张诊断，后 2 张处置。</span></div>
-      <div class="rule"><b>02</b><span id="t-r2">诊断单限时 25 秒，从 4 个结论里选出根因。</span></div>
-      <div class="rule"><b>03</b><span id="t-r3">处置单限时 120 秒，在终端里敲 VRP 命令把故障修好。</span></div>
-      <div class="rule"><b>04</b><span id="t-r4">每张满分 100，总分 500：基础 60 + 速度 30 + 连击 10。</span></div>
+      <div class="rule"><b>01</b><div><span>每局 5 张：前 3 张诊断，后 2 张处置。</span><span class="en">5 tickets: 3 diagnosis, then 2 hands-on repairs.</span></div></div>
+      <div class="rule"><b>02</b><div><span>诊断单限时 25 秒，从 4 个结论里选出根因。</span><span class="en">Diagnosis: 25 seconds, pick the root cause from 4 options.</span></div></div>
+      <div class="rule"><b>03</b><div><span>处置单限时 120 秒，把命令拖入队列完成修复。</span><span class="en">Repair: 120 seconds, drag commands into the queue to fix it.</span></div></div>
+      <div class="rule"><b>04</b><div><span>每题满分 100，总分 500；提示不扣分，看解析本题 0 分。</span><span class="en">Up to 100 per ticket, 500 total. Hints are free; revealing analysis scores 0 for that ticket.</span></div></div>
     </div>
-    <button class="cta" id="btn-start">开始值班</button>
+    <button class="cta" id="btn-start">开始值班 Start shift</button>
   </div>
 </div>
 
 <!-- result -->
 <div class="overlay" id="ov-result">
   <div class="sheet">
-    <h2 id="t-res-title">交班报告</h2>
-    <div class="score"><b id="v-final">0</b><span id="v-finalmax">/500 分</span></div>
+    <h2>交班报告 <span class="en-inline">Handover report</span></h2>
+    <div class="score"><b id="v-final">0</b><span>/500 分 pts</span></div>
     <div class="rank" id="v-rank">—</div>
     <div class="mini">
-      <div><span id="t-res-acc">诊断准确率</span><b id="v-acc">0%</b></div>
-      <div><span id="t-res-right">正确</span><b id="v-right">0/5</b></div>
-      <div><span id="t-res-best">最高连击</span><b id="v-best">0</b></div>
-      <div><span id="t-res-avg">平均判断</span><b id="v-avg">0s</b></div>
+      <div><span>准确率 <i>Accuracy</i></span><b id="v-acc">0%</b></div>
+      <div><span>正确 <i>Correct</i></span><b id="v-right">0/5</b></div>
+      <div><span>最高连击 <i>Best combo</i></span><b id="v-best">0</b></div>
+      <div><span>平均用时 <i>Avg time</i></span><b id="v-avg">0s</b></div>
     </div>
     <table class="ho">
-      <thead><tr><th id="t-th-ticket">工单号</th><th id="t-th-verdict">判定</th><th id="t-th-time">用时</th><th id="t-th-score">得分</th></tr></thead>
+      <thead><tr><th>工单号 Ticket</th><th>判定 Verdict</th><th>用时 Time</th><th>得分 Points</th></tr></thead>
       <tbody id="v-ho"></tbody>
     </table>
     <div class="review" id="v-review"></div>
-    <button class="cta" id="btn-again">再值一班</button>
+    <button class="cta" id="btn-again">再值一班 Next shift</button>
+  </div>
+</div>
+
+<!-- confirm reveal -->
+<div class="overlay" id="ov-confirm">
+  <div class="sheet confirm">
+    <h2>看解析？ <span class="en-inline">Show analysis?</span></h2>
+    <p>本题将记为 0 分，并直接显示正确答案、解析与处置命令。
+      <span class="en">This ticket scores 0 and reveals the answer, explanation and remediation.</span>
+    </p>
+    <div class="row">
+      <button class="btn" id="btn-cancel">取消 Cancel</button>
+      <button class="btn primary" id="btn-confirm">看解析 Show</button>
+    </div>
   </div>
 </div>
 
@@ -989,146 +1000,42 @@ const CASES = [
   }
 ];
 
-/* =========================================================
-   文案
-   ========================================================= */
-const UI = {
-  zh:{
-    title:"网络急诊室", sub:"GlobalTech 一线运维 · 路由故障处置",
-    score:"积分", combo:"连击", case:"工单",
-    liveDiag:"实时拓扑 · 故障定位中", liveCli:"实时拓扑 · 处置中",
-    next:"下一张工单", report:"交班报告",
-    ok:"诊断正确", bad:"诊断有误", timeout:"超时未处置",
-    correctIs:"正确结论：", fix:"处置命令",
-    noteLabel:"现场备注", reporter:"报障", impact:"影响",
-    goalLabel:"处置目标", syntaxLabel:"命令语法",
-    send:"执行", cmdPlaceholder:"输入命令，? 查看帮助",
-    cliDone:"配置已生效，故障消除", required:"应执行",
-    legend:"红框：本单受影响的两端",
-    keys:"<kbd>1</kbd>–<kbd>4</kbd> 选择 · <kbd>↵</kbd> 下一单",
-    keysCli:"在右侧终端输入命令 · <kbd>?</kbd> 帮助",
-    pan:"← 左右拖动查看拓扑 →",
-    startTitle:"接单前，先看四条",
-    startLead:"你是 GlobalTech 网络组的值班工程师。5 张工单来自不同部门，现象、命令回显和现场备注都在工单里。",
-    rules:[
-      "每局 5 张：前 3 张诊断，后 2 张处置。",
-      "诊断单限时 25 秒，从 4 个结论里选出根因。",
-      "处置单限时 120 秒，在终端里敲 VRP 命令把故障修好。",
-      "每张满分 100，总分 500：基础 60 + 速度 30 + 连击 10。"
-    ],
-    start:"开始值班",
-    resTitle:"交班报告", unit:"分",
-    acc:"准确率", right:"正确", best:"最高连击", avg:"平均判断",
-    maxUnit:"/500 分", again:"再值一班",
-    thTicket:"工单号", thVerdict:"判定", thTime:"用时", thScore:"得分",
-    verdictOk:"已定位", verdictNo:"误判",
-    ranks:["待培训","实习生","网络工程师","主任工程师"],
-    perfect:"5 单全对，零误判。",
-    perfectSub:"这份判断力可以直接带徒弟了。"
-  },
-  en:{
-    title:"Network ER", sub:"GlobalTech NOC · routing incident response",
-    score:"Points", combo:"Combo", case:"Ticket",
-    liveDiag:"Live topology · locating fault", liveCli:"Live topology · repairing",
-    next:"Next ticket", report:"Handover report",
-    ok:"Diagnosis correct", bad:"Diagnosis wrong", timeout:"Timed out",
-    correctIs:"Correct cause: ", fix:"Remediation",
-    noteLabel:"Field note", reporter:"Reported by", impact:"Impact",
-    goalLabel:"Objective", syntaxLabel:"Syntax",
-    send:"Run", cmdPlaceholder:"Type a command, ? for help",
-    cliDone:"Configuration took effect", required:"Required",
-    legend:"Red = affected endpoints",
-    keys:"<kbd>1</kbd>–<kbd>4</kbd> pick · <kbd>↵</kbd> next",
-    keysCli:"Type in the terminal · <kbd>?</kbd> for help",
-    pan:"← drag to pan the topology →",
-    startTitle:"Four things before you start",
-    startLead:"You are the on-call engineer at GlobalTech NOC. Five tickets are waiting, each with symptoms, CLI output and field notes.",
-    rules:[
-      "5 tickets: 3 diagnosis, then 2 hands-on repairs.",
-      "Diagnosis: 25 seconds, pick the root cause.",
-      "Repair: 120 seconds, type VRP commands to fix it.",
-      "Up to 100 per ticket, 500 total: 60 base + 30 speed + 10 combo."
-    ],
-    start:"Start shift",
-    resTitle:"Handover report", unit:"pts",
-    acc:"Accuracy", right:"Correct", best:"Best combo", avg:"Avg. decision",
-    maxUnit:"/500 pts", again:"Next shift",
-    thTicket:"Ticket", thVerdict:"Verdict", thTime:"Time", thScore:"Points",
-    verdictOk:"Resolved", verdictNo:"Misdiagnosed",
-    ranks:["Trainee","Intern","Network Engineer","Senior Engineer"],
-    perfect:"5 of 5. No misdiagnosis.",
-    perfectSub:"That is a clean shift."
-  }
+/* 每单提示（中英） */
+const HINTS = {
+  "INC-20261110-0142": {zh:"看 R3 的路由表：只有直连网段，缺少回 192.168.1.0/24 的路由。", en:"Check R3's table: it only has connected routes, with no return route to 192.168.1.0/24."},
+  "INC-20261110-0157": {zh:"对比 /25 的覆盖范围与 192.168.2.200 的位置，再想最长匹配。", en:"Compare the /25 range with 192.168.2.200, then think about longest match."},
+  "INC-20261110-0163": {zh:"RIP 只通告 network 覆盖的网段，检查 R3 的 network 语句。", en:"RIP advertises only networks covered by network statements; check R3's config."},
+  "INC-20261110-0171": {zh:"R2 的 RIP 版本是 version 1，邻居用的是 v2。", en:"R2 runs RIP version 1 while its neighbors run version 2."},
+  "INC-20261110-0188": {zh:"同一条链路两端必须在同一区域，比较 R2 与 R3 的 area。", en:"Both ends of a link must share one area; compare R2 and R3."},
+  "INC-20261110-0194": {zh:"两台设备的 Router ID 都是 1.1.1.1。", en:"Both devices are using Router ID 1.1.1.1."},
+  "INC-20261110-0203": {zh:"子接口有 IP 但没有 802.1Q 封装，检查是否缺少 dot1q termination vid 20。", en:"The sub-interface has an IP but no 802.1Q termination; check for dot1q vid 20."},
+  "INC-20261110-0211": {zh:"端口写了 port default vlan 20，但 VLAN 20 是否存在？", en:"The port says VLAN 20, but does VLAN 20 actually exist?"}
 };
 
-const HELP = {
-  zh:{
-    user:["system-view            进入系统视图"],
-    system:[
-      "interface <接口>       进入接口视图，如 interface g0/0/2",
-      "rip <进程号>           进入 RIP 视图",
-      "ospf <进程号>          进入 OSPF 视图",
-      "vlan batch <VLAN>      批量创建 VLAN",
-      "ip route-static ...    配置静态路由",
-      "quit                   返回上一级"
-    ],
-    if:[
-      "ip address <IP> <掩码>        配置接口地址",
-      "dot1q termination vid <VLAN>  子接口封装 802.1Q",
-      "arp broadcast enable          允许子接口转发 ARP",
-      "port link-type access|trunk   端口类型",
-      "port default vlan <VLAN>      端口加入 VLAN",
-      "quit                          返回上一级"
-    ],
-    rip:["version 2                     使用 RIPv2","network <网段>                宣告网段","quit"],
-    ospf:["router id <IP>                设置 Router ID","area <区域号>                 进入区域视图","quit"],
-    area:["network <网段> <反掩码>       在区域内宣告网段","quit"]
-  },
-  en:{
-    user:["system-view            enter system view"],
-    system:[
-      "interface <port>       enter interface view, e.g. interface g0/0/2",
-      "rip <id>               enter RIP view",
-      "ospf <id>              enter OSPF view",
-      "vlan batch <id>        create VLANs",
-      "ip route-static ...    configure a static route",
-      "quit                   up one level"
-    ],
-    if:[
-      "ip address <ip> <mask>         set interface address",
-      "dot1q termination vid <vlan>   bind 802.1Q on a sub-interface",
-      "arp broadcast enable           allow ARP on the sub-interface",
-      "port link-type access|trunk    set port type",
-      "port default vlan <vlan>       assign the port to a VLAN",
-      "quit                           up one level"
-    ],
-    rip:["version 2                     use RIPv2","network <net>                 advertise a network","quit"],
-    ospf:["router id <ip>                set Router ID","area <id>                     enter area view","quit"],
-    area:["network <net> <wildcard>      advertise inside the area","quit"]
-  }
+/* 处置单干扰命令 */
+const DISTRACTORS = {
+  "INC-20261110-0142": ["ip route-static 192.168.1.0 24 10.0.12.2", "ip route-static 0.0.0.0 0 10.0.23.1"],
+  "INC-20261110-0188": ["area 0.0.0.1", "network 10.0.23.0 0.0.0.255", "router id 3.3.3.3"],
+  "INC-20261110-0203": ["dot1q termination vid 10", "arp broadcast disable", "port default vlan 20"],
+  "INC-20261110-0211": ["vlan batch 10", "port link-type trunk", "undo port default vlan 20"]
 };
 
 /* =========================================================
    引擎
    ========================================================= */
 const $ = id => document.getElementById(id);
-const LANG_KEY = "network_er_lang";
 const ROUND = 5, DIAG_N = 3, CLI_N = 2, TIME = 25;
 const DIAG_POOL = CASES.filter(c => c.mode !== "cli");
 const CLI_POOL = CASES.filter(c => c.mode === "cli");
 
-let lang = localStorage.getItem(LANG_KEY) || "zh";
 let phase = "start";
 let S = null;
 let timerId = null;
 let evTimer = null;
 let scoreTimer = null;
+let flashTimer = null;
 
-function t(k){ return UI[lang][k]; }
-function tx(o){ return o ? (o[lang] || o.zh) : ""; }
-function esc(s){
-  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-}
+const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 function shuffle(a){
   a = a.slice();
   for(let i = a.length - 1; i > 0; i--){
@@ -1138,45 +1045,16 @@ function shuffle(a){
   return a;
 }
 function current(){ return S.queue[S.i]; }
-
-/* 接口名归一化：GigabitEthernet0/0/2 / g0/0/2 / ge0/0/2 → 0/0/2 */
 function canonIf(name){
   let x = String(name || "").toLowerCase().replace(/\s+/g,"");
   x = x.replace(/^gigabitethernet/, "").replace(/^ethernet/, "").replace(/^ge/, "").replace(/^g/, "");
   return x;
 }
-
-/* ---------------- 文案刷新 ---------------- */
-function applyStatic(){
-  const u = UI[lang];
-  $("lang").textContent = lang === "zh" ? "EN" : "中文";
-  $("t-title").textContent = u.title;
-  $("t-sub").textContent = u.sub;
-  $("t-score").textContent = u.score;
-  $("t-combo").textContent = u.combo;
-  $("t-case").textContent = u.case;
-  $("t-legend").textContent = u.legend;
-  $("t-pan").textContent = u.pan;
-  $("t-start-title").textContent = u.startTitle;
-  $("t-start-lead").textContent = u.startLead;
-  ["r1","r2","r3","r4"].forEach((k,i) => { $("t-" + k).textContent = u.rules[i]; });
-  $("btn-start").textContent = u.start;
-  $("t-res-title").textContent = u.resTitle;
-  $("v-finalmax").textContent = u.maxUnit;
-  $("t-res-acc").textContent = u.acc;
-  $("t-res-right").textContent = u.right;
-  $("t-res-best").textContent = u.best;
-  $("t-res-avg").textContent = u.avg;
-  $("t-th-ticket").textContent = u.thTicket;
-  $("t-th-verdict").textContent = u.thVerdict;
-  $("t-th-time").textContent = u.thTime;
-  $("t-th-score").textContent = u.thScore;
-  $("btn-again").textContent = u.again;
-  $("t-goal").textContent = u.goalLabel;
-  $("t-syntax").textContent = u.syntaxLabel;
-  $("v-send").textContent = u.send;
-  $("v-input").placeholder = u.cmdPlaceholder;
-  if(phase === "start") $("t-keys").innerHTML = u.keys;
+function biLine(o){
+  return '<span class="zh">' + esc(o.zh) + '</span><span class="en">' + esc(o.en) + '</span>';
+}
+function pair(zh, en){
+  return esc(zh) + '<span class="sep">/</span>' + esc(en);
 }
 
 /* ---------------- 开局 ---------------- */
@@ -1185,14 +1063,16 @@ function startGame(){
   S = {
     queue: picked, i: 0, score: 0, combo: 0, best: 0, right: 0,
     answered: false, chosen: -1, left: TIME, limit: TIME,
-    records: [], wrong: [], opts: [], fb: null,
-    evPres: [], stack: null, flags: null, term: []
+    records: [], wrong: [], opts: [], fb: null, evPres: [],
+    stack: null, flags: null, term: [], bank: [], cmdQueue: [],
+    hintShown: false, revealed: false
   };
   phase = "play";
   $("ov-start").classList.remove("on");
   $("ov-result").classList.remove("on");
+  $("ov-confirm").classList.remove("on");
   clearInterval(scoreTimer);
-  loadCase();
+  loadCase(false);
 }
 
 function loadCase(focus){
@@ -1201,38 +1081,43 @@ function loadCase(focus){
   S.limit = isCli ? (c.limit || 120) : TIME;
   S.left = S.limit;
   S.answered = false;
+  S.revealed = false;
+  S.hintShown = false;
   S.chosen = -1;
   S.fb = null;
-  S.opts = isCli ? [] : shuffle(c.options.map((o, idx) => ({ text:o, right: idx === c.answer })));
+  S.opts = isCli ? [] : shuffle(c.options.map((o, idx) => ({ text: o, right: idx === c.answer })));
   if(isCli){
     S.stack = [{ type:"user" }];
     S.flags = {};
+    S.cmdQueue = [];
+    S.bank = shuffle(c.solution.concat(DISTRACTORS[c.meta.id] || []));
     S.term = [
       { t:"out", text:"// " + c.meta.id + " · " + c.device },
-      { t:"out", text:"// " + UI[lang].goalLabel + ": " + tx(c.goal) },
-      { t:"out", text:"// " + UI[lang].cmdPlaceholder }
+      { t:"out", text:"// 处置目标 Objective: " + c.goal.zh + " / " + c.goal.en },
+      { t:"out", text:"// 拖入或点击命令，然后执行 / Drag or tap commands, then run" }
     ];
   } else {
-    S.stack = null; S.flags = null; S.term = [];
+    S.stack = null; S.flags = null; S.term = []; S.bank = []; S.cmdQueue = [];
   }
   renderCase();
   if(focus) focusTicket();
   buildEvidence(c, false);
   startTimer();
-  if(isCli) setTimeout(() => { const i = $("v-input"); if(i && !S.answered) i.focus(); }, 60);
 }
 
 /* ---------------- 渲染 ---------------- */
 function renderCase(){
   const c = current();
-  const u = UI[lang];
   const isCli = c.mode === "cli";
   const m = c.meta;
 
   $("v-score").textContent = S.score;
   $("v-combo").textContent = S.combo;
   $("v-case").textContent = (S.i + 1) + "/" + ROUND;
-  $("t-live").textContent = isCli ? u.liveCli : u.liveDiag;
+  $("v-live").innerHTML = isCli
+    ? '处置中 <i class="en-inline">Repairing</i>'
+    : '故障定位中 <i class="en-inline">Locating fault</i>';
+  $("v-dot").className = "dot" + (isCli ? " cli" : "");
 
   $("v-bars").innerHTML = Array.from({length: ROUND}, (_, i) => {
     let cls = "";
@@ -1243,6 +1128,7 @@ function renderCase(){
 
   $("scene-wan").classList.toggle("on", c.scene === "wan");
   $("scene-vlan").classList.toggle("on", c.scene === "vlan");
+  $("topo").setAttribute("viewBox", c.scene === "wan" ? "0 120 900 300" : "0 60 900 350");
   document.querySelectorAll(".node").forEach(n => n.classList.remove("alert"));
   (c.watch || []).forEach(id => { const el = $(id); if(el) el.classList.add("alert"); });
   centerStage(c);
@@ -1250,30 +1136,46 @@ function renderCase(){
   $("v-pri").textContent = m.priority;
   $("v-pri").className = "prio " + m.priority.toLowerCase();
   $("v-id").textContent = m.id;
-  $("v-site").textContent = tx(m.site);
-  $("v-meta2").textContent = u.reporter + " " + tx(m.reporter) + " · " + tx(m.time) + " · " + u.impact + " " + tx(m.affected);
-  $("v-tag").textContent = tx(c.tag);
-  $("v-title").textContent = tx(c.title);
+  $("v-site").innerHTML = pair(m.site.zh, m.site.en);
+  $("v-meta2").innerHTML =
+    '<span>报障 ' + esc(m.reporter.zh) + ' ' + esc(m.reporter.en) + '</span>' +
+    '<span>' + esc(m.time.zh) + ' / ' + esc(m.time.en) + '</span>' +
+    '<span>影响 ' + esc(m.affected.zh) + ' / ' + esc(m.affected.en) + '</span>';
+  $("v-tag").innerHTML = esc(c.tag.zh) + '<span class="en-inline">' + esc(c.tag.en) + '</span>';
+  $("v-title").innerHTML = '<span class="zh">' + esc(c.title.zh) + '</span><span class="en">' + esc(c.title.en) + '</span>';
 
-  $("v-note").innerHTML = "<b>" + esc(u.noteLabel) + "</b>" + esc(tx(c.note));
-  $("v-note").style.display = "";
+  $("v-note").innerHTML = '<b>现场备注 Field note</b>' +
+    '<div class="zh">' + esc(c.note.zh) + '</div><div class="en">' + esc(c.note.en) + '</div>';
+  $("v-note").hidden = false;
 
-  $("v-cli").style.display = isCli ? "" : "none";
-  $("v-opts").style.display = isCli ? "none" : "";
+  $("v-cli").hidden = !isCli;
+  $("v-opts").hidden = isCli;
   if(isCli){
-    $("v-goal").textContent = tx(c.goal);
-    $("v-syntax").textContent = tx(c.syntax);
+    $("v-goal-zh").textContent = c.goal.zh;
+    $("v-goal-en").textContent = c.goal.en;
+    $("v-syntax-zh").textContent = c.syntax.zh;
+    $("v-syntax-en").textContent = c.syntax.en;
     $("v-termhead").textContent = c.device + " · console";
-    $("v-input").disabled = !!S.answered;
-    $("v-send").disabled = !!S.answered;
-    updatePrompt();
     renderTerm();
+    renderBank();
+    renderQueue();
+    $("v-run").disabled = !!S.answered;
+    $("v-clear").disabled = !!S.answered;
+    $("v-buildmsg").textContent = "";
   }
 
   buildOptions(c, isCli);
-  $("t-keys").innerHTML = isCli ? u.keysCli : u.keys;
-  $("next").style.display = S.answered ? "" : "none";
-  $("next").textContent = S.i === ROUND - 1 ? u.report : u.next;
+  $("v-keys").innerHTML = isCli
+    ? '拖拽或点击命令 Drag / tap · 提示 Hint · 解析 Analysis'
+    : '<kbd>1</kbd>–<kbd>4</kbd> 选择 Pick · 提示 Hint · 解析 Analysis';
+
+  $("v-hint").disabled = !!S.answered || S.hintShown;
+  $("v-reveal").disabled = !!S.answered;
+  if(S.hintShown) renderHint();
+  else { $("v-hintbox").hidden = true; $("v-hintbox").innerHTML = ""; }
+
+  $("next").hidden = !S.answered;
+  $("next").textContent = S.i === ROUND - 1 ? "交班报告 Report" : "下一张 Next";
 
   paintFeedback();
   paintTimer();
@@ -1292,54 +1194,14 @@ function buildOptions(c, isCli){
       else if(i === S.chosen) cls += " bad";
     }
     b.className = cls;
-    b.innerHTML = "<b>" + "ABCD"[i] + "</b><span>" + esc(tx(op.text)) + "</span>";
+    b.innerHTML = "<b>" + "ABCD"[i] + "</b><span class='opttext'>" +
+      "<span class='zh'>" + esc(op.text.zh) + "</span><span class='en'>" + esc(op.text.en) + "</span></span>";
     if(!S.answered) b.onclick = () => answer(i);
     box.appendChild(b);
   });
 }
 
-/* 窄屏时把受影响的两端滚到可视区中间 */
-function centerStage(c){
-  const sb = document.querySelector(".stagebody");
-  if(!sb || sb.scrollWidth <= sb.clientWidth + 2) return;
-  requestAnimationFrame(() => {
-    const svg = $("topo");
-    const sc = svg.getBoundingClientRect().width / 900 || 1;
-    let cx = 450, n = 0, sum = 0;
-    (c.watch || []).forEach(id => {
-      const g = document.getElementById(id);
-      const r = g && g.querySelector("rect");
-      if(r){ sum += (+r.getAttribute("x")) + (+r.getAttribute("width")) / 2; n++; }
-    });
-    if(n) cx = sum / n;
-    sb.scrollLeft = Math.max(0, cx * sc - sb.clientWidth / 2);
-  });
-}
-
-/* 反馈出现后滚到可视位置 */
-function revealFeedback(){
-  const fb = document.querySelector("#v-fb .fb");
-  if(!fb || typeof fb.scrollIntoView !== "function") return;
-  setTimeout(() => {
-    try { fb.scrollIntoView({ behavior:"smooth", block:"nearest" }); }
-    catch(e) { try { fb.scrollIntoView(); } catch(e2) {} }
-  }, 90);
-}
-
-/* 换单后把工单卡带回视野 */
-function focusTicket(){
-  const p = document.querySelector(".panel");
-  if(!p) return;
-  if(window.innerWidth <= 980){
-    const y = p.getBoundingClientRect().top + (window.pageYOffset || 0) - 10;
-    try { window.scrollTo({ top:y, behavior:"smooth" }); }
-    catch(e) { window.scrollTo(0, y); }
-  } else {
-    p.scrollTop = 0;
-  }
-}
-
-/* ---------------- 证据逐行显示 ---------------- */
+/* ---------------- 证据 ---------------- */
 function buildEvidence(c, instant){
   clearTimeout(evTimer);
   const box = $("v-evs");
@@ -1350,7 +1212,10 @@ function buildEvidence(c, instant){
     d.className = "ev";
     const src = document.createElement("div");
     src.className = "evsrc";
-    src.textContent = b.src;
+    src.textContent = b.src
+      .replace("（RIP 视图）", "（RIP 视图 / RIP view）")
+      .replace("（OSPF 视图）", "（OSPF 视图 / OSPF view）")
+      .replace("分段验证", "分段验证 / Segment test");
     const pre = document.createElement("pre");
     d.appendChild(src);
     d.appendChild(pre);
@@ -1366,24 +1231,19 @@ function buildEvidence(c, instant){
     S.evPres[bi].textContent = b.lines.slice(0, li).join("\n");
     if(li >= b.lines.length){
       bi++; li = 0;
-      evTimer = setTimeout(tick, 170);
+      evTimer = setTimeout(tick, 150);
     } else {
-      evTimer = setTimeout(tick, b.lines[li - 1] === "" ? 45 : 34);
+      evTimer = setTimeout(tick, b.lines[li - 1] === "" ? 40 : 28);
     }
   };
-  evTimer = setTimeout(tick, 110);
+  evTimer = setTimeout(tick, 90);
 }
-
 function fillEvidence(c){
   (c.evidence || []).forEach((b, bi) => {
     if(S.evPres[bi]) S.evPres[bi].textContent = b.lines.join("\n");
   });
 }
-
-function flushEvidence(){
-  clearTimeout(evTimer);
-  fillEvidence(current());
-}
+function flushEvidence(){ clearTimeout(evTimer); fillEvidence(current()); }
 
 /* ---------------- 计时 ---------------- */
 function startTimer(){
@@ -1398,20 +1258,19 @@ function startTimer(){
     }
   }, 100);
 }
-
 function paintTimer(){
   if(!S) return;
   const pct = Math.max(0, S.left / S.limit * 100);
   $("barfill").style.width = pct + "%";
   $("bar").classList.toggle("warn", S.left <= 8);
-  $("v-time").textContent = Math.ceil(S.left) + (lang === "zh" ? "s" : "s");
+  $("v-time").textContent = Math.ceil(S.left) + "s";
 }
 
 /* ---------------- 计分 ---------------- */
 function speedGain(){ return Math.round(S.left / S.limit * 30); }
 function comboGain(){ return S.combo >= 3 ? 10 : (S.combo >= 2 ? 5 : 0); }
 
-/* ---------------- 诊断作答 ---------------- */
+/* ---------------- 诊断 ---------------- */
 function answer(pick){
   if(!S || S.answered) return;
   const c = current();
@@ -1430,19 +1289,20 @@ function answer(pick){
     S.score += gain;
   } else {
     S.combo = 0;
-    S.wrong.push({ c: c, right: tx(S.opts[rightIdx].text) });
+    const r = S.opts[rightIdx].text;
+    S.wrong.push({ c: c, rightZh: "正确答案：" + r.zh, rightEn: "Correct answer: " + r.en });
   }
-  S.records.push({ id: c.meta.id, ok: ok, used: used, gain: gain });
+  S.records.push({ id: c.meta.id, ok: ok, revealed: false, used: used, gain: gain });
   S.answered = true;
   S.chosen = pick;
+  $("ov-confirm").classList.remove("on");
   S.fb = {
-    ok: ok,
-    head: ok ? UI[lang].ok : (pick === -1 ? UI[lang].timeout : UI[lang].bad),
-    rightText: ok ? "" : UI[lang].correctIs + tx(S.opts[rightIdx].text),
-    why: tx(c.why),
-    fix: c.fix,
-    used: used,
-    gain: gain
+    kind: ok ? "ok" : "bad",
+    headZh: ok ? "诊断正确" : (pick === -1 ? "超时未处置" : "诊断有误"),
+    headEn: ok ? "Diagnosis correct" : (pick === -1 ? "Timed out" : "Diagnosis wrong"),
+    rightZh: ok ? "" : "正确答案：" + S.opts[rightIdx].text.zh,
+    rightEn: ok ? "" : "Correct answer: " + S.opts[rightIdx].text.en,
+    why: c.why, fix: c.fix, used: used, gain: gain
   };
   renderCase();
   revealFeedback();
@@ -1450,7 +1310,6 @@ function answer(pick){
 
 /* ---------------- 迷你 VRP 终端 ---------------- */
 function viewNow(){ return S.stack[S.stack.length - 1]; }
-
 function promptText(){
   const n = current().device || "Huawei";
   const v = viewNow();
@@ -1462,12 +1321,7 @@ function promptText(){
   if(v.type === "area") return "[" + n + "-ospf-" + v.ospf + "-area-" + v.id + "]";
   return "[" + n + "]";
 }
-
-function updatePrompt(){
-  if(!S || !S.stack) return;
-  $("v-prompt").textContent = promptText();
-}
-
+function updatePrompt(){ if(S && S.stack) $("v-prompt") && ($("v-prompt").textContent = promptText()); }
 function renderTerm(){
   if(!S.term) return;
   const box = $("v-termout");
@@ -1480,43 +1334,14 @@ function renderTerm(){
   }).join("");
   box.scrollTop = box.scrollHeight;
 }
-
-function pushOut(text){ S.term.push({ t:"out", text:text }); }
-
-function exec(rawCmd){
-  if(!S || S.answered || !S.stack) return;
-  const cmd = rawCmd.replace(/\s+/g, " ").trim();
-  if(!cmd) return;
-  const low = cmd.toLowerCase();
-  S.term.push({ t:"cmd", text: promptText() + " " + cmd });
-
-  if(low === "?" || low === "help" || low === "？"){
-    (HELP[lang][viewNow().type] || HELP[lang].system).forEach(pushOut);
-  } else {
-    const view = viewNow();
-    const res = applyCmd(low, view);
-    if(res.error) S.term.push({ t:"err", text: res.error });
-    else {
-      if(res.out) res.out.forEach(pushOut);
-      evalChecks(low, view);
-    }
-  }
-  S.term = S.term.slice(-120);
-  renderTerm();
-  updatePrompt();
-
-  const c = current();
-  if(c.checks && c.checks.every((ck, i) => S.flags[i])) resolveCli(true);
-}
+const pushOut = text => S.term.push({ t:"out", text:text });
 
 function applyCmd(low, view){
   const unknown = { error: "Error: Unrecognized command found at '^' position." };
-
   if(low === "quit" || low === "q" || low === "return"){
     if(S.stack.length > 1) S.stack.pop();
     return { out: [] };
   }
-
   if(view.type === "user"){
     if(low === "system-view" || low === "sys"){
       S.stack.push({ type:"system" });
@@ -1524,14 +1349,10 @@ function applyCmd(low, view){
     }
     return unknown;
   }
-
   if(view.type === "system"){
     if(low === "system-view") return { out: [] };
     let m = low.match(/^(?:interface|int)\s+(\S+)$/);
-    if(m){
-      S.stack.push({ type:"if", name:"GigabitEthernet" + canonIf(m[1]) });
-      return { out: [] };
-    }
+    if(m){ S.stack.push({ type:"if", name:"GigabitEthernet" + canonIf(m[1]) }); return { out: [] }; }
     m = low.match(/^rip\s+(\d+)$/);
     if(m){ S.stack.push({ type:"rip", id:m[1] }); return { out: [] }; }
     m = low.match(/^ospf\s+(\d+)$/);
@@ -1540,7 +1361,6 @@ function applyCmd(low, view){
     if(/^ip route-static\s+\S+.*$/.test(low)) return { out: [] };
     return unknown;
   }
-
   if(view.type === "if"){
     if(/^ip address\s+\S+\s+\S+$/.test(low)) return { out: [] };
     if(/^dot1q termination vid\s+\d+$/.test(low)) return { out: [] };
@@ -1550,13 +1370,11 @@ function applyCmd(low, view){
     if(/^(undo\s+)?shutdown$/.test(low)) return { out: [] };
     return unknown;
   }
-
   if(view.type === "rip"){
     if(/^version\s+[12]$/.test(low)) return { out: [] };
     if(/^network\s+\S+(\s+\S+)?$/.test(low)) return { out: [] };
     return unknown;
   }
-
   if(view.type === "ospf"){
     if(/^router id\s+\S+$/.test(low)) return { out: [] };
     const m = low.match(/^area\s+(\S+)$/);
@@ -1570,15 +1388,12 @@ function applyCmd(low, view){
     if(/^network\s+.+\s+area\s+\S+$/.test(low)) return { out: [] };
     return unknown;
   }
-
   if(view.type === "area"){
     if(/^network\s+\S+\s+\S+$/.test(low)) return { out: [] };
     return unknown;
   }
-
   return unknown;
 }
-
 function evalChecks(low, view){
   const c = current();
   (c.checks || []).forEach((ck, i) => {
@@ -1594,30 +1409,184 @@ function resolveCli(ok){
   if(!S || S.answered) return;
   clearInterval(timerId);
   const c = current();
-  const u = UI[lang];
   const used = Math.max(0.1, Math.round((S.limit - Math.max(0, S.left)) * 10) / 10);
   let gain = 0;
-
   if(ok){
     S.right++; S.combo++; S.best = Math.max(S.best, S.combo);
     gain = 60 + speedGain() + comboGain();
     S.score += gain;
-    S.term.push({ t:"ok", text: u.cliDone });
+    S.term.push({ t:"ok", text:"配置已生效，故障消除 / Configuration took effect" });
   } else {
     S.combo = 0;
-    S.term.push({ t:"err", text: u.timeout });
-    S.wrong.push({ c: c, right: u.required + ": " + c.solution.join(" → ") });
+    S.term.push({ t:"err", text:"超时未处置 / Timed out" });
+    S.wrong.push({
+      c: c,
+      rightZh: "应执行：" + c.solution.join(" → "),
+      rightEn: "Required: " + c.solution.join(" → "),
+      solution: c.solution
+    });
   }
-  S.records.push({ id: c.meta.id, ok: ok, used: used, gain: gain });
+  S.records.push({ id: c.meta.id, ok: ok, revealed: false, used: used, gain: gain });
   S.answered = true;
+  $("ov-confirm").classList.remove("on");
   S.fb = {
-    ok: ok,
-    head: ok ? u.cliDone : u.timeout,
-    rightText: "",
-    why: tx(c.why),
+    kind: ok ? "ok" : "bad",
+    headZh: ok ? "处置成功" : "超时未处置",
+    headEn: ok ? "Repair complete" : "Timed out",
+    rightZh: "",
+    rightEn: "",
+    why: c.why,
     fix: c.solution.join("\n"),
     used: used,
     gain: gain
+  };
+  renderCase();
+  renderTerm();
+  revealFeedback();
+}
+
+function execOne(rawCmd){  if(!S || S.answered) return false;
+  const cmd = rawCmd.replace(/\s+/g, " ").trim();
+  if(!cmd) return true;
+  const low = cmd.toLowerCase();
+  S.term.push({ t:"cmd", text: promptText() + " " + cmd });
+  let ok = true;
+  if(low === "?" || low === "help"){
+    const v = viewNow();
+    const help = {
+      user: ["system-view            enter system view"],
+      system: ["interface <port>  rip <id>  ospf <id>  vlan batch <id>  ip route-static ..."],
+      if: ["ip address  dot1q termination vid <vlan>  arp broadcast enable  port default vlan <vlan>"],
+      rip: ["version 2  network <net>"],
+      ospf: ["router id <ip>  area <id>"],
+      area: ["network <net> <wildcard>"]
+    };
+    (help[v.type] || help.system).forEach(pushOut);
+  } else {
+    const view = viewNow();
+    const res = applyCmd(low, view);
+    if(res.error){ S.term.push({ t:"err", text: res.error }); ok = false; }
+    else { (res.out || []).forEach(pushOut); evalChecks(low, view); }
+  }
+  S.term = S.term.slice(-140);
+  if(ok && current().checks && current().checks.every((ck, i) => S.flags[i])) resolveCli(true);
+  return ok;
+}
+
+/* ---------------- 命令拖拽 ---------------- */
+function renderBank(){
+  const box = $("v-bank");
+  if(!box || !S.bank) return;
+  box.innerHTML = S.bank.map((cmd, i) => {
+    const used = S.cmdQueue.indexOf(i) >= 0;
+    return "<button class='cmdtile" + (used ? " used" : "") + "' draggable='" + (used ? "false" : "true") +
+      "' data-i='" + i + "'>" + esc(cmd) + "</button>";
+  }).join("");
+}
+function renderQueue(){
+  const dz = $("v-drop");
+  if(!dz) return;
+  if(!S.cmdQueue.length){
+    dz.innerHTML = "<div class='empty'>把下方命令拖到这里，或直接点击命令<br>Drag command tiles here, or tap a tile</div>";
+    return;
+  }
+  dz.innerHTML = S.cmdQueue.map((bi, p) =>
+    "<div class='qitem'><span class='qn'>" + (p + 1) + "</span><code>" + esc(S.bank[bi]) +
+    "</code><button class='qx' data-p='" + p + "' title='移除 Remove'>×</button></div>"
+  ).join("");
+}
+function addCmd(i){
+  if(!S || S.answered) return;
+  if(S.cmdQueue.indexOf(i) >= 0) return;
+  S.cmdQueue.push(i);
+  renderBank(); renderQueue();
+  $("v-buildmsg").textContent = "";
+}
+function removeCmd(p){
+  if(!S || S.answered) return;
+  S.cmdQueue.splice(p, 1);
+  renderBank(); renderQueue();
+}
+function runQueue(){
+  if(!S || S.answered) return;
+  if(!S.cmdQueue.length){
+    $("v-buildmsg").textContent = "先拖入或点击命令，再执行 / Add commands first, then run.";
+    return;
+  }
+  S.term.push({ t:"out", text:"// 执行队列 Run queue ————————————" });
+  S.stack = [{ type:"user" }];
+  S.flags = {};
+  for(const idx of S.cmdQueue.slice()){
+    if(S.answered) break;
+    const ok = execOne(S.bank[idx]);
+    if(!ok) break;
+  }
+  renderTerm();
+  if(!S.answered){
+    const c = current();
+    const done = (c.checks || []).filter((ck, i) => S.flags[i]).length;
+    const total = (c.checks || []).length;
+    $("v-buildmsg").textContent = "配置未完成（" + done + "/" + total + "），调整顺序再试 / Not fixed yet (" + done + "/" + total + "), adjust and retry.";
+    try { $("v-termout").scrollIntoView({ behavior:"smooth", block:"nearest" }); } catch(e) {}
+  }
+}
+
+/* ---------------- 提示 / 解析 ---------------- */
+function renderHint(){
+  const h = HINTS[current().meta.id];
+  const box = $("v-hintbox");
+  if(!h){ box.hidden = true; return; }
+  box.innerHTML = "<b>提示 Hint</b><div class='zh'>" + esc(h.zh) + "</div><div class='en'>" + esc(h.en) + "</div>";
+  box.hidden = false;
+}
+function showHint(){
+  if(!S || S.answered || S.hintShown) return;
+  S.hintShown = true;
+  renderHint();
+  $("v-hint").disabled = true;
+}
+function askReveal(){
+  if(!S || S.answered) return;
+  $("ov-confirm").classList.add("on");
+}
+function doReveal(){
+  if(!S || S.answered) return;
+  $("ov-confirm").classList.remove("on");
+  clearInterval(timerId);
+  flushEvidence();
+  const c = current();
+  const isCli = c.mode === "cli";
+  const used = Math.max(0.1, Math.round((S.limit - Math.max(0, S.left)) * 10) / 10);
+
+  S.answered = true;
+  S.revealed = true;
+  S.chosen = -1;
+  S.combo = 0;
+
+  let rightZh = "", rightEn = "";
+  if(isCli){
+    rightZh = "正确命令：" + c.solution.join(" → ");
+    rightEn = "Solution: " + c.solution.join(" → ");
+    S.term.push({ t:"out", text:"// 已展示解析 Solution revealed" });
+    S.wrong.push({ c: c, rightZh: rightZh, rightEn: rightEn, solution: c.solution });
+  } else {
+    const r = S.opts.find(o => o.right).text;
+    rightZh = "正确答案：" + r.zh;
+    rightEn = "Correct answer: " + r.en;
+    S.wrong.push({ c: c, rightZh: rightZh, rightEn: rightEn });
+  }
+
+  S.records.push({ id: c.meta.id, ok: false, revealed: true, used: used, gain: 0 });
+  S.fb = {
+    kind: "info",
+    headZh: "已看解析",
+    headEn: "Analysis revealed",
+    rightZh: rightZh,
+    rightEn: rightEn,
+    why: c.why,
+    fix: isCli ? c.solution.join("\n") : c.fix,
+    used: used,
+    gain: 0
   };
   renderCase();
   renderTerm();
@@ -1629,18 +1598,27 @@ function paintFeedback(){
   const box = $("v-fb");
   box.innerHTML = "";
   if(!S || !S.fb) return;
-  const fb = S.fb;
-  const gainTxt = fb.gain ? "+" + fb.gain : "+0";
+  const f = S.fb;
   box.innerHTML =
-    "<div class='fb " + (fb.ok ? "ok" : "bad") + "'>" +
-      "<div class='fbh'>" + esc(fb.head) + (fb.rightText ? " · " + esc(fb.rightText) : "") + "</div>" +
-      "<div class='fbmeta'><span>" + esc(UI[lang].thTime) + " " + fb.used + "s</span><span><i>" + gainTxt + "</i></span></div>" +
-      "<p>" + esc(fb.why) + "</p>" +
-      "<div class='fix'><span>" + esc(UI[lang].fix) + "</span><code>" + esc(fb.fix) + "</code></div>" +
+    "<div class='fb " + f.kind + "'>" +
+      "<div class='fbh'>" + esc(f.headZh) + " <span class='en-inline'>" + esc(f.headEn) + "</span></div>" +
+      "<div class='fbmeta'>用时 Time " + f.used + "s<i>+" + f.gain + "</i></div>" +
+      (f.rightZh ? "<p>" + esc(f.rightZh) + "</p>" : "") +
+      (f.rightEn ? "<p class='en'>" + esc(f.rightEn) + "</p>" : "") +
+      "<p>" + esc(f.why.zh) + "</p><p class='en'>" + esc(f.why.en) + "</p>" +
+      "<div class='fix'><span>处置 Remediation</span><code>" + esc(f.fix) + "</code></div>" +
     "</div>";
 }
+function revealFeedback(){
+  const fb = document.querySelector("#v-fb .fb");
+  if(!fb || typeof fb.scrollIntoView !== "function") return;
+  setTimeout(() => {
+    try { fb.scrollIntoView({ behavior:"smooth", block:"nearest" }); }
+    catch(e) { try { fb.scrollIntoView(); } catch(e2) {} }
+  }, 90);
+}
 
-/* ---------------- 下一张 / 结果 ---------------- */
+/* ---------------- 结果 ---------------- */
 function nextCase(){
   if(!S || !S.answered) return;
   if(S.i < ROUND - 1){
@@ -1650,44 +1628,51 @@ function nextCase(){
     showResult(false);
   }
 }
-
 function showResult(instant){
   phase = "result";
   clearInterval(timerId);
-  const u = UI[lang];
   const max = ROUND * 100;
   const pct = S.score / max;
+  const ranks = [
+    { zh:"待培训", en:"Trainee" },
+    { zh:"实习生", en:"Intern" },
+    { zh:"网络工程师", en:"Network Engineer" },
+    { zh:"主任工程师", en:"Senior Engineer" }
+  ];
   const rankIdx = pct >= 0.85 ? 3 : pct >= 0.65 ? 2 : pct >= 0.4 ? 1 : 0;
   const acc = Math.round(S.right / ROUND * 100);
   const totalUsed = S.records.reduce((s, r) => s + r.used, 0);
   const avg = S.records.length ? Math.round(totalUsed / S.records.length) : 0;
 
   $("v-final").textContent = instant ? S.score : 0;
-  $("v-rank").textContent = u.ranks[rankIdx];
+  $("v-rank").innerHTML = esc(ranks[rankIdx].zh) + '<span class="en-inline">' + esc(ranks[rankIdx].en) + '</span>';
   $("v-acc").textContent = acc + "%";
   $("v-right").textContent = S.right + "/" + ROUND;
   $("v-best").textContent = S.best;
   $("v-avg").textContent = avg + "s";
 
   $("v-ho").innerHTML = S.records.map(r => {
-    const okv = r.ok ? "<span class='okv'>" + esc(u.verdictOk) + "</span>"
-                     : "<span class='nov'>" + esc(u.verdictNo) + "</span>";
-    return "<tr><td>" + esc(r.id) + "</td><td class='v'>" + okv + "</td>" +
-           "<td>" + r.used + "s</td><td class='sc'>" + (r.gain ? "+" + r.gain : "0") + "</td></tr>";
+    const v = r.revealed
+      ? "<span class='rev'>看解析 Reviewed</span>"
+      : (r.ok ? "<span class='okv'>已定位 Resolved</span>" : "<span class='nov'>误判 Misdiagnosed</span>");
+    return "<tr><td>" + esc(r.id) + "</td><td class='v'>" + v + "</td><td>" + r.used + "s</td><td class='sc'>" + (r.gain ? "+" + r.gain : "0") + "</td></tr>";
   }).join("");
 
   if(S.wrong.length === 0){
-    $("v-review").innerHTML = "<div class='rv'><b>" + esc(u.perfect) + "</b><span>" + esc(u.perfectSub) + "</span></div>";
+    $("v-review").innerHTML = "<div class='rv'><b>5 单全对，零误判。 <span class='en-inline'>5 of 5. No misdiagnosis.</span></b></div>";
   } else {
-    $("v-review").innerHTML = S.wrong.map(w =>
-      "<div class='rv'><b>" + esc(tx(w.c.title)) + "</b>" +
-      "<span>" + esc(w.right) + "</span>" +
-      "<em>" + esc(w.c.fix.split("\n")[0]) + "</em></div>"
-    ).join("");
+    $("v-review").innerHTML = S.wrong.map(w => {
+      if(w.c.mode === "cli" && w.solution){
+        return "<div class='rv'><b>" + esc(w.c.title.zh) + " <span class='en-inline'>" + esc(w.c.title.en) + "</span></b>" +
+          "<span>正确命令 Solution</span><em class='sol'>" + w.solution.map(esc).join("<br>") + "</em></div>";
+      }
+      return "<div class='rv'><b>" + esc(w.c.title.zh) + " <span class='en-inline'>" + esc(w.c.title.en) + "</span></b>" +
+        "<span>" + esc(w.rightZh) + "</span><span>" + esc(w.rightEn) + "</span>" +
+        "<em>" + esc(w.c.fix.split("\n")[0]) + "</em></div>";
+    }).join("");
   }
 
   $("ov-result").classList.add("on");
-
   if(!instant){
     clearInterval(scoreTimer);
     const target = S.score;
@@ -1698,72 +1683,113 @@ function showResult(instant){
       $("v-final").textContent = shown;
     }, 34);
   }
-
-  /* 结果页在移动端可能滚动，滚回顶部 */
-  $("ov-result").querySelector(".sheet").scrollTop = 0;
+  document.querySelector("#ov-result .sheet").scrollTop = 0;
 }
 
-/* ---------------- 语言 ---------------- */
-function setLang(l){
-  lang = l;
-  localStorage.setItem(LANG_KEY, l);
-  applyStatic();
-  if(phase === "play" && S){
-    renderCase();
-    buildEvidence(current(), true);
-  } else if(phase === "result" && S){
-    showResult(true);
+/* ---------------- 视野辅助 ---------------- */
+function centerStage(c){
+  const sb = document.querySelector(".stagebody");
+  if(!sb || sb.scrollWidth <= sb.clientWidth + 2) return;
+  requestAnimationFrame(() => {
+    const svg = $("topo");
+    const sc = svg.getBoundingClientRect().width / 900 || 1;
+    let cx = 450, n = 0, sum = 0;
+    (c.watch || []).forEach(id => {
+      const g = document.getElementById(id);
+      const r = g && g.querySelector("rect");
+      if(r){ sum += (+r.getAttribute("x")) + (+r.getAttribute("width")) / 2; n++; }
+    });
+    if(n) cx = sum / n;
+    sb.scrollLeft = Math.max(0, cx * sc - sb.clientWidth / 2);
+  });
+}
+function focusTicket(){
+  const p = document.querySelector(".ticket");
+  if(!p) return;
+  if(window.innerWidth <= 900){
+    const y = p.getBoundingClientRect().top + (window.pageYOffset || 0) - 8;
+    try { window.scrollTo({ top:y, behavior:"smooth" }); }
+    catch(e) { window.scrollTo(0, y); }
   } else {
-    $("t-keys").innerHTML = UI[lang].keys;
+    p.scrollTop = 0;
   }
 }
 
 /* ---------------- 事件 ---------------- */
-$("lang").onclick = () => setLang(lang === "zh" ? "en" : "zh");
+$("btn-start").onclick = startGame;
+$("btn-again").onclick = startGame;
+$("next").onclick = nextCase;
 $("restart").onclick = () => {
   clearInterval(timerId);
   clearTimeout(evTimer);
   clearInterval(scoreTimer);
   phase = "start";
   $("ov-result").classList.remove("on");
+  $("ov-confirm").classList.remove("on");
   $("ov-start").classList.add("on");
 };
-$("btn-start").onclick = startGame;
-$("btn-again").onclick = startGame;
-$("next").onclick = nextCase;
-$("v-send").onclick = () => {
-  const v = $("v-input").value;
-  $("v-input").value = "";
-  exec(v);
-  $("v-input").focus();
+$("v-hint").onclick = showHint;
+$("v-reveal").onclick = askReveal;
+$("btn-cancel").onclick = () => $("ov-confirm").classList.remove("on");
+$("btn-confirm").onclick = doReveal;
+$("v-run").onclick = runQueue;
+$("v-clear").onclick = () => {
+  if(!S || S.answered) return;
+  S.cmdQueue = [];
+  renderBank(); renderQueue();
+  $("v-buildmsg").textContent = "";
 };
-$("v-input").addEventListener("keydown", e => {
-  if(e.key === "Enter"){
-    e.preventDefault();
-    const v = $("v-input").value;
-    $("v-input").value = "";
-    exec(v);
-  }
+
+/* 命令池：点击 + 拖拽 */
+$("v-bank").addEventListener("click", e => {
+  const b = e.target.closest(".cmdtile");
+  if(!b || b.classList.contains("used")) return;
+  addCmd(+b.dataset.i);
+});
+$("v-bank").addEventListener("dragstart", e => {
+  const b = e.target.closest(".cmdtile");
+  if(!b) return;
+  e.dataTransfer.setData("text/plain", b.dataset.i);
+  e.dataTransfer.effectAllowed = "copy";
+  b.classList.add("dragging");
+});
+$("v-bank").addEventListener("dragend", e => {
+  const b = e.target.closest(".cmdtile");
+  if(b) b.classList.remove("dragging");
+});
+$("v-drop").addEventListener("dragover", e => {
+  if(!S || S.answered) return;
+  e.preventDefault();
+  e.dataTransfer.dropEffect = "copy";
+  $("v-drop").classList.add("over");
+});
+$("v-drop").addEventListener("dragleave", () => $("v-drop").classList.remove("over"));
+$("v-drop").addEventListener("drop", e => {
+  e.preventDefault();
+  $("v-drop").classList.remove("over");
+  const i = parseInt(e.dataTransfer.getData("text/plain"), 10);
+  if(!isNaN(i)) addCmd(i);
+});
+$("v-drop").addEventListener("click", e => {
+  const x = e.target.closest(".qx");
+  if(x) removeCmd(+x.dataset.p);
 });
 
+/* 键盘：1-4 选择，回车下一张 */
 document.addEventListener("keydown", e => {
   if(phase !== "play" || !S) return;
-  const inInput = document.activeElement && document.activeElement.id === "v-input";
-  if(e.key === "Enter"){
-    if(inInput) return;
-    if(S.answered){ e.preventDefault(); nextCase(); }
+  if(e.key === "Enter" && S.answered && !e.target.closest("button")){
+    e.preventDefault();
+    nextCase();
     return;
   }
-  if(inInput) return;
   const c = current();
   if(!S.answered && c.mode !== "cli" && /^[1-4]$/.test(e.key)){
     answer(parseInt(e.key, 10) - 1);
   }
 });
 
-/* ---------------- 初始化 ---------------- */
-applyStatic();
-$("t-keys").innerHTML = UI[lang].keys;
+/* 初始化 */
 if(location.search.indexOf("play") >= 0){ startGame(); }
 </script>
 </body>
