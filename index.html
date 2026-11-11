@@ -131,7 +131,7 @@
   }
   .ev pre{
     margin:0;padding:6px 9px;font-family:var(--mono);font-size:10px;line-height:1.48;
-    color:#33475B;white-space:pre;overflow:auto;max-height:96px;
+    color:#33475B;white-space:pre;overflow:auto;max-height:76px;
   }
   .note{
     margin:7px 0 0;padding:6px 8px;border-left:2px solid #E2B25A;background:var(--amber-bg);
@@ -144,7 +144,7 @@
   .opts{display:flex;flex-direction:column;gap:6px;margin-top:10px}
   .opt{
     display:flex;align-items:flex-start;gap:9px;width:100%;text-align:left;
-    padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:#fff;
+    padding:7px 9px;border-radius:8px;border:1px solid var(--line);background:#fff;
     color:var(--body);font-family:inherit;font-size:12px;line-height:1.45;cursor:pointer;transition:.15s;
   }
   .opt:hover:not(.dis){border-color:#BCD3F2;background:#FAFCFF}
@@ -317,6 +317,138 @@
   .confirm .row{display:flex;gap:8px;justify-content:flex-end}
   .confirm .btn{padding:7px 14px}
 
+  /* ================= answer emphasis ================= */
+  .answerpanel{
+    position:relative;margin-top:10px;padding:9px 9px 10px;
+    border:1px solid #D6E4F7;border-left:3px solid var(--blue);border-radius:9px;
+    background:linear-gradient(180deg,#F8FBFF 0%,#F3F8FF 100%);
+    box-shadow:inset 0 1px 0 #fff,0 2px 10px rgba(47,111,235,.05);
+  }
+  .answerpanel.focus{animation:panelFocus .9s ease-out}
+  @keyframes panelFocus{
+    0%{box-shadow:inset 0 1px 0 #fff,0 0 0 0 rgba(47,111,235,.18)}
+    100%{box-shadow:inset 0 1px 0 #fff,0 0 0 10px rgba(47,111,235,0)}
+  }
+  .ahead{display:flex;align-items:center;gap:6px;margin:0 0 7px;min-height:15px;flex-wrap:wrap}
+  .ahead .adot{
+    width:6px;height:6px;border-radius:50%;background:var(--blue);flex:none;
+    box-shadow:0 0 0 3px rgba(47,111,235,.10);animation:dotPulse 1.8s ease-in-out infinite;
+  }
+  @keyframes dotPulse{
+    0%,100%{box-shadow:0 0 0 3px rgba(47,111,235,.10)}
+    50%{box-shadow:0 0 0 6px rgba(47,111,235,.03)}
+  }
+  .ahead b{font-size:11px;color:var(--blue);font-weight:700;letter-spacing:.2px}
+  .ahead b i{font-style:normal;font-size:9px;color:#7E9BC4;font-weight:500;margin-left:3px}
+  .ahead .amode{margin-left:auto;font-size:9px;color:#7E93AA;letter-spacing:.1px}
+  .ahead .amode i{font-style:normal;color:#A3B1C2;margin-left:3px}
+  .ahead .linkbtn{margin-left:4px}
+  .answerpanel .opts{margin-top:0}
+
+  .opt{animation:optIn .28s ease-out both;animation-delay:calc(var(--i,0) * 45ms)}
+  @keyframes optIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+  .opt .opttext{flex:1;min-width:0}
+  .opt:hover:not(.dis){transform:translateX(2px);box-shadow:0 3px 10px rgba(47,111,235,.08)}
+  .opt:active:not(.dis){transform:translateX(2px) scale(.995)}
+  .opt:hover:not(.dis) b{background:#E7F0FE;color:var(--blue)}
+  .opt.ok{animation:okPulse .5s ease-out}
+  @keyframes okPulse{0%{box-shadow:0 0 0 0 rgba(24,138,94,.28)}100%{box-shadow:0 0 0 9px rgba(24,138,94,0)}}
+  .opt.bad{animation:shake .38s}
+  .opt.dis:not(.ok):not(.bad){animation:none;opacity:1}
+  @keyframes shake{0%,100%{transform:none}20%{transform:translateX(-4px)}40%{transform:translateX(4px)}60%{transform:translateX(-2px)}80%{transform:translateX(2px)}}
+  .tagok{
+    flex:none;align-self:center;margin-left:6px;padding:1px 5px;border-radius:4px;
+    background:#EAF8F1;border:1px solid #BEE7D6;color:#1E7A56;
+    font-size:8.5px;white-space:nowrap;font-weight:600;
+  }
+
+  .builder.answerpanel{margin-top:10px;padding:9px 9px 10px}
+  .dropzone.over{box-shadow:0 0 0 3px rgba(47,111,235,.10)}
+  .qitem{animation:qIn .2s ease-out}
+  @keyframes qIn{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
+  .btn.primary.ready{animation:btnPulse 1.5s ease-in-out infinite}
+  @keyframes btnPulse{
+    0%,100%{box-shadow:0 0 0 0 rgba(47,111,235,.22)}
+    50%{box-shadow:0 0 0 6px rgba(47,111,235,.05)}
+  }
+  .btn.hint{color:#8A641C;border-color:#EAD9B9;background:#FFFDF7}
+  .btn.hint:hover{border-color:#DDBF83;color:#8A5A0A}
+  .btn.reveal{color:#2F6FEB;border-color:#CFE0F8;background:#F8FBFF}
+  .btn.reveal:hover{border-color:#A9C6EE;color:var(--blue-dark)}
+  .stat b.pop{animation:scorePop .38s ease-out}
+  @keyframes scorePop{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}
+
+  /* hint */
+  .hintbox{
+    position:relative;margin-top:9px;padding:8px 10px 9px 12px;
+    border:1px solid #F0DFC0;border-left:3px solid #E2B25A;
+    background:linear-gradient(180deg,#FFFDF7,#FFFBF1);
+    border-radius:0 8px 8px 0;font-size:10.5px;line-height:1.55;color:#6E5A34;
+    animation:hintIn .3s ease-out;
+  }
+  @keyframes hintIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+  .hinthead{display:flex;align-items:center;gap:6px;margin-bottom:3px}
+  .hinthead svg{width:14px;height:14px;stroke:#B7791F;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+  .hinthead b{font-size:10.5px;color:#8A641C;font-weight:700}
+  .hinthead .hfree{
+    font-size:8.5px;color:#1E7A56;background:#EAF8F1;border:1px solid #CBEBDD;
+    border-radius:4px;padding:1px 5px;font-weight:600;
+  }
+  .hintbox .zh{font-size:10.5px;line-height:1.55;color:#6E5A34}
+  .hintbox .en{font-size:9.5px;line-height:1.5;color:#93794C;margin-top:2px}
+
+  /* feedback / analysis */
+  .fb{
+    position:relative;margin-top:11px;padding:0;overflow:hidden;
+    border:1px solid var(--line);border-left:3px solid #9FB6D1;background:#fff;
+    border-radius:9px;animation:fbIn .35s ease-out;
+  }
+  @keyframes fbIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .fb.ok{border-color:#BEE7D6;border-left-color:var(--green);background:#FBFEFC}
+  .fb.bad{border-color:#EFC5C5;border-left-color:var(--red);background:#FFFCFC}
+  .fb.info{border-color:#C9DCF5;border-left-color:var(--blue);background:#FBFDFF}
+  .fbhead{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border-bottom:1px solid rgba(30,60,100,.05)}
+  .fb.ok .fbhead{background:#F2FBF7}
+  .fb.bad .fbhead{background:#FFF6F6}
+  .fb.info .fbhead{background:#F5F9FF}
+  .ficon{
+    flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;
+    background:var(--blue);color:#fff;font-size:12px;font-weight:700;line-height:1;
+  }
+  .fb.ok .ficon{background:var(--green)}
+  .fb.bad .ficon{background:var(--red)}
+  .fbhead .fht{flex:1;min-width:0;padding-top:1px}
+  .fbhead b{display:block;font-size:11.5px;color:var(--ink);line-height:1.35}
+  .fbhead .fen2{display:block;font-size:9.5px;color:var(--muted);margin-top:1px}
+  .fpts{
+    flex:none;font-family:var(--mono);font-size:15px;font-weight:700;color:var(--amber);
+    padding-top:2px;
+  }
+  .fb.ok .fpts{color:var(--green)}
+  .fb.info .fpts{color:var(--blue);font-size:11px;padding-top:5px}
+  .fbody{padding:8px 10px 9px}
+  .frow{display:flex;gap:8px;margin-bottom:7px}
+  .frow:last-child{margin-bottom:0}
+  .flabel{
+    flex:none;width:62px;font-size:9px;color:#8A99A8;line-height:1.35;padding-top:2px;
+  }
+  .flabel i{display:block;font-style:normal;font-size:8.5px;color:#A6B4C4;margin-top:1px}
+  .fcontent{flex:1;min-width:0}
+  .fanswer{font-size:11px;font-weight:600;color:#1E7A56;line-height:1.5}
+  .fanswer .fen{display:block;font-size:9.5px;font-weight:400;color:#5E8A75;margin-top:2px;line-height:1.45}
+  .fzh{font-size:10.5px;line-height:1.55;color:var(--body)}
+  .fen{font-size:9.5px;line-height:1.5;color:var(--muted);margin-top:2px}
+  .fixlist{display:flex;flex-direction:column;gap:3px}
+  .fixlist .fl{
+    display:flex;gap:6px;align-items:flex-start;background:#fff;border:1px solid var(--line);
+    border-radius:5px;padding:3px 6px;
+  }
+  .fixlist .fn{
+    flex:none;width:14px;height:14px;border-radius:50%;background:#EEF4FE;color:var(--blue);
+    font-size:8px;display:grid;place-items:center;font-family:var(--mono);margin-top:1px;
+  }
+  .fixlist code{font-family:var(--mono);font-size:9.5px;color:#1E7A56;overflow-wrap:anywhere;line-height:1.5}
+
   /* ---------------- mobile ---------------- */
   @media(max-width:900px){
     html,body{max-width:100%;overflow-x:hidden}
@@ -337,6 +469,13 @@
     .edge.r{right:0;background:linear-gradient(270deg,#FAFCFF,rgba(250,252,255,0))}
     .titlebar{flex-wrap:wrap}
     .titlebar .actions{width:100%;justify-content:flex-start;margin-top:4px}
+    .ahead{gap:5px}
+    .ahead .amode{font-size:8.5px}
+    .fbhead{padding:7px 8px}
+    .fbody{padding:7px 8px}
+    .flabel{width:52px;font-size:8.5px}
+    .frow{gap:6px}
+    .fpts{font-size:13px}
     .stagebody{padding:4px;display:block;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
     svg#topo{width:720px;max-width:none;height:auto}
     .pan{display:block}
@@ -437,8 +576,8 @@
     <div class="titlebar">
       <h2 class="title" id="v-title">—</h2>
       <div class="actions">
-        <button class="btn" id="v-hint">提示 Hint</button>
-        <button class="btn" id="v-reveal">直接看解析 Show analysis</button>
+        <button class="btn hint" id="v-hint">提示 Hint</button>
+        <button class="btn reveal" id="v-reveal">直接看解析 Show analysis</button>
       </div>
     </div>
     <div class="hintbox" id="v-hintbox" hidden></div>
@@ -450,8 +589,12 @@
         <div class="row"><b>处置目标<br>Objective</b><div><div class="gz" id="v-goal-zh">—</div><div class="ge" id="v-goal-en">—</div></div></div>
         <div class="row"><b>命令语法<br>Syntax</b><div><code id="v-syntax-zh">—</code><div class="ge" id="v-syntax-en"></div></div></div>
       </div>
-      <div class="builder">
-        <div class="bhead"><b>按顺序放入命令 <i>Drag / tap commands in order</i></b><button class="linkbtn" id="v-clear">清空 Clear</button></div>
+      <div class="builder answerpanel" id="v-builder">
+        <div class="ahead">
+          <span class="adot"></span><b>作答区 <i>Answer</i></b>
+          <span class="amode">按顺序放入命令 <i>Drag commands in order</i></span>
+          <button class="linkbtn" id="v-clear">清空 Clear</button>
+        </div>
         <div class="dropzone" id="v-drop"></div>
         <div class="bank" id="v-bank"></div>
         <div class="runrow"><button class="btn primary" id="v-run">执行队列 Run queue</button></div>
@@ -463,7 +606,13 @@
       </div>
     </div>
 
-    <div class="opts" id="v-opts"></div>
+    <div class="answerpanel" id="v-answer">
+      <div class="ahead">
+        <span class="adot"></span><b>作答区 <i>Answer</i></b>
+        <span class="amode">选择根因 <i>Pick the root cause</i></span>
+      </div>
+      <div class="opts" id="v-opts"></div>
+    </div>
     <div id="v-fb"></div>
   </section>
 </main>
@@ -1065,7 +1214,7 @@ function startGame(){
     answered: false, chosen: -1, left: TIME, limit: TIME,
     records: [], wrong: [], opts: [], fb: null, evPres: [],
     stack: null, flags: null, term: [], bank: [], cmdQueue: [],
-    hintShown: false, revealed: false
+    hintShown: false, revealed: false, lastScore: 0
   };
   phase = "play";
   $("ov-start").classList.remove("on");
@@ -1103,6 +1252,7 @@ function loadCase(focus){
   if(focus) focusTicket();
   buildEvidence(c, false);
   startTimer();
+  setTimeout(pulseAnswer, 30);
 }
 
 /* ---------------- 渲染 ---------------- */
@@ -1112,6 +1262,13 @@ function renderCase(){
   const m = c.meta;
 
   $("v-score").textContent = S.score;
+  if(S.score !== S.lastScore){
+    const sc = $("v-score");
+    sc.classList.remove("pop");
+    void sc.offsetWidth;
+    sc.classList.add("pop");
+    S.lastScore = S.score;
+  }
   $("v-combo").textContent = S.combo;
   $("v-case").textContent = (S.i + 1) + "/" + ROUND;
   $("v-live").innerHTML = isCli
@@ -1149,7 +1306,7 @@ function renderCase(){
   $("v-note").hidden = false;
 
   $("v-cli").hidden = !isCli;
-  $("v-opts").hidden = isCli;
+  $("v-answer").hidden = isCli;
   if(isCli){
     $("v-goal-zh").textContent = c.goal.zh;
     $("v-goal-en").textContent = c.goal.en;
@@ -1170,7 +1327,11 @@ function renderCase(){
     : '<kbd>1</kbd>–<kbd>4</kbd> 选择 Pick · 提示 Hint · 解析 Analysis';
 
   $("v-hint").disabled = !!S.answered || S.hintShown;
+  $("v-hint").textContent = S.hintShown ? "已提示 Hint shown" : "提示 Hint";
   $("v-reveal").disabled = !!S.answered;
+  $("v-reveal").textContent = S.revealed
+    ? "已显示解析 Analysis shown"
+    : (S.answered ? "已作答 Answered" : "直接看解析 Show analysis");
   if(S.hintShown) renderHint();
   else { $("v-hintbox").hidden = true; $("v-hintbox").innerHTML = ""; }
 
@@ -1194,8 +1355,10 @@ function buildOptions(c, isCli){
       else if(i === S.chosen) cls += " bad";
     }
     b.className = cls;
+    b.style.setProperty("--i", i);
     b.innerHTML = "<b>" + "ABCD"[i] + "</b><span class='opttext'>" +
-      "<span class='zh'>" + esc(op.text.zh) + "</span><span class='en'>" + esc(op.text.en) + "</span></span>";
+      "<span class='zh'>" + esc(op.text.zh) + "</span><span class='en'>" + esc(op.text.en) + "</span></span>" +
+      (S.answered && op.right ? "<span class='tagok'>正确答案 Correct</span>" : "");
     if(!S.answered) b.onclick = () => answer(i);
     box.appendChild(b);
   });
@@ -1486,6 +1649,8 @@ function renderBank(){
 function renderQueue(){
   const dz = $("v-drop");
   if(!dz) return;
+  const run = $("v-run");
+  if(run) run.classList.toggle("ready", S.cmdQueue.length > 0 && !S.answered);
   if(!S.cmdQueue.length){
     dz.innerHTML = "<div class='empty'>把下方命令拖到这里，或直接点击命令<br>Drag command tiles here, or tap a tile</div>";
     return;
@@ -1536,7 +1701,13 @@ function renderHint(){
   const h = HINTS[current().meta.id];
   const box = $("v-hintbox");
   if(!h){ box.hidden = true; return; }
-  box.innerHTML = "<b>提示 Hint</b><div class='zh'>" + esc(h.zh) + "</div><div class='en'>" + esc(h.en) + "</div>";
+  box.innerHTML =
+    "<div class='hinthead'>" +
+      "<svg viewBox='0 0 24 24'><path d='M9 18h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.6.5 1 1.2 1 1.9V17h5.2v-1.3c0-.7.4-1.4 1-1.9A6 6 0 0 0 12 3z'/></svg>" +
+      "<b>提示 Hint</b><span class='hfree'>不扣分 Free</span>" +
+    "</div>" +
+    "<div class='zh'>" + esc(h.zh) + "</div>" +
+    "<div class='en'>" + esc(h.en) + "</div>";
   box.hidden = false;
 }
 function showHint(){
@@ -1544,6 +1715,7 @@ function showHint(){
   S.hintShown = true;
   renderHint();
   $("v-hint").disabled = true;
+  $("v-hint").textContent = "已提示 Hint shown";
 }
 function askReveal(){
   if(!S || S.answered) return;
@@ -1565,10 +1737,8 @@ function doReveal(){
 
   let rightZh = "", rightEn = "";
   if(isCli){
-    rightZh = "正确命令：" + c.solution.join(" → ");
-    rightEn = "Solution: " + c.solution.join(" → ");
     S.term.push({ t:"out", text:"// 已展示解析 Solution revealed" });
-    S.wrong.push({ c: c, rightZh: rightZh, rightEn: rightEn, solution: c.solution });
+    S.wrong.push({ c: c, rightZh: "", rightEn: "", solution: c.solution });
   } else {
     const r = S.opts.find(o => o.right).text;
     rightZh = "正确答案：" + r.zh;
@@ -1599,14 +1769,33 @@ function paintFeedback(){
   box.innerHTML = "";
   if(!S || !S.fb) return;
   const f = S.fb;
+  const icon = f.kind === "ok" ? "✓" : (f.kind === "bad" ? "×" : "i");
+  const pts = f.gain > 0 ? "+" + f.gain : (f.kind === "info" ? "0 分 0 pts" : "0 分");
+  const answer = f.rightZh
+    ? "<div class='frow'><span class='flabel'>正确答案<i>Answer</i></span>" +
+      "<div class='fcontent'><div class='fanswer'>" + esc(f.rightZh) +
+      "<span class='fen'>" + esc(f.rightEn) + "</span></div></div></div>"
+    : "";
+  const lines = String(f.fix || "").split("\n").filter(Boolean);
+  const fix = lines.map((l, i) =>
+    "<div class='fl'><span class='fn'>" + (i + 1) + "</span><code>" + esc(l) + "</code></div>"
+  ).join("");
+
   box.innerHTML =
     "<div class='fb " + f.kind + "'>" +
-      "<div class='fbh'>" + esc(f.headZh) + " <span class='en-inline'>" + esc(f.headEn) + "</span></div>" +
-      "<div class='fbmeta'>用时 Time " + f.used + "s<i>+" + f.gain + "</i></div>" +
-      (f.rightZh ? "<p>" + esc(f.rightZh) + "</p>" : "") +
-      (f.rightEn ? "<p class='en'>" + esc(f.rightEn) + "</p>" : "") +
-      "<p>" + esc(f.why.zh) + "</p><p class='en'>" + esc(f.why.en) + "</p>" +
-      "<div class='fix'><span>处置 Remediation</span><code>" + esc(f.fix) + "</code></div>" +
+      "<div class='fbhead'>" +
+        "<span class='ficon'>" + icon + "</span>" +
+        "<div class='fht'><b>" + esc(f.headZh) + "</b><span class='fen2'>" + esc(f.headEn) + " · " + f.used + "s</span></div>" +
+        "<span class='fpts'>" + pts + "</span>" +
+      "</div>" +
+      "<div class='fbody'>" +
+        answer +
+        "<div class='frow'><span class='flabel'>原因<i>Why</i></span>" +
+          "<div class='fcontent'><div class='fzh'>" + esc(f.why.zh) + "</div>" +
+          "<div class='fen'>" + esc(f.why.en) + "</div></div></div>" +
+        "<div class='frow'><span class='flabel'>处置<i>Remediation</i></span>" +
+          "<div class='fcontent'><div class='fixlist'>" + fix + "</div></div></div>" +
+      "</div>" +
     "</div>";
 }
 function revealFeedback(){
@@ -1713,6 +1902,14 @@ function focusTicket(){
   } else {
     p.scrollTop = 0;
   }
+}
+function pulseAnswer(){
+  if(!S) return;
+  const el = current().mode === "cli" ? $("v-builder") : $("v-answer");
+  if(!el) return;
+  el.classList.remove("focus");
+  void el.offsetWidth;
+  el.classList.add("focus");
 }
 
 /* ---------------- 事件 ---------------- */
