@@ -1,0 +1,1770 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#070d18">
+<title>网络急诊室 · Network ER</title>
+<style>
+  :root{
+    --bg:#070d18; --bg2:#0a1524; --panel:#0d1929; --panel2:#101f33;
+    --line:#1d3248; --line2:#274a68;
+    --txt:#e7f0ff; --dim:#8ea6c4; --dim2:#5f7a9a;
+    --cyan:#3ddcff; --green:#3ee08a; --amber:#ffc857; --red:#ff5f6d;
+    --mono:Consolas,"Cascadia Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    background:
+      radial-gradient(1200px 600px at 15% -10%, #10233c 0%, transparent 60%),
+      radial-gradient(900px 500px at 100% 0%, #0d2a3a 0%, transparent 55%),
+      var(--bg);
+    color:var(--txt);
+    font-family:"Microsoft YaHei","PingFang SC",system-ui,-apple-system,sans-serif;
+    height:100dvh;display:flex;flex-direction:column;overflow:hidden;
+  }
+  /* ---------- header ---------- */
+  header{display:flex;align-items:center;gap:14px;padding:14px 18px 12px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:10px;margin-right:auto}
+  .logo{
+    width:34px;height:34px;border-radius:9px;flex:none;
+    background:linear-gradient(145deg,#1b4a63,#0f2436);
+    border:1px solid #2f6e8c;display:grid;place-items:center;
+    box-shadow:0 0 18px rgba(61,220,255,.18);
+  }
+  .logo svg{width:19px;height:19px}
+  h1{font-size:17px;margin:0;letter-spacing:.5px;font-weight:700}
+  .sub{font-size:11px;color:var(--dim2);margin-top:2px}
+  .stats{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{
+    display:flex;align-items:center;gap:7px;padding:6px 11px;border-radius:9px;
+    background:var(--panel);border:1px solid var(--line);font-size:12px;color:var(--dim);
+    min-width:74px;
+  }
+  .chip b{color:var(--txt);font-family:var(--mono);font-size:14px;font-weight:700}
+  .chip .max{font-style:normal;font-family:var(--mono);font-size:10px;color:var(--dim2);margin-left:-2px}
+  .chip.hot b{color:var(--amber)}
+  button.ghost{
+    background:var(--panel);border:1px solid var(--line);color:var(--dim);
+    padding:7px 12px;border-radius:9px;font-size:12px;cursor:pointer;font-family:inherit;
+  }
+  button.ghost:hover{border-color:var(--line2);color:var(--txt)}
+  /* ---------- layout ---------- */
+  main{
+    flex:1;min-height:0;display:grid;grid-template-columns:1.24fr .98fr;gap:16px;
+    padding:0 18px 12px;
+  }
+  main>*{min-width:0}
+  .card{
+    background:linear-gradient(180deg,rgba(16,31,51,.92),rgba(10,21,36,.92));
+    border:1px solid var(--line);border-radius:14px;position:relative;overflow:hidden;
+    min-width:0;
+  }
+  .card::before{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(120deg,rgba(61,220,255,.05),transparent 40%);
+  }
+  /* ---------- stage ---------- */
+  .stage{display:flex;flex-direction:column;min-height:0}
+  .stagehead{
+    display:flex;align-items:center;gap:8px;padding:10px 14px;
+    border-bottom:1px solid var(--line);font-size:11px;color:var(--dim2);
+    letter-spacing:1px;text-transform:uppercase;
+  }
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
+  .pan{display:none;margin-left:auto;font-size:10px;color:#5f7a9a;letter-spacing:0;text-transform:none}
+  .stagebody{
+    flex:1;min-height:0;display:grid;place-items:center;padding:6px;position:relative;
+    background-image:radial-gradient(circle at 1px 1px, rgba(90,145,195,.13) 1px, transparent 0);
+    background-size:22px 22px;
+  }
+  .stagebody::after{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(120% 85% at 50% 50%, transparent 68%, rgba(7,13,24,.62) 100%);
+  }
+  svg#topo{width:100%;height:100%;max-height:100%;display:block}
+  .legend{
+    display:flex;justify-content:space-between;gap:10px;align-items:center;
+    padding:8px 14px;border-top:1px solid var(--line);font-size:11px;color:var(--dim2);
+  }
+  .legend em{font-style:normal;display:flex;align-items:center;gap:6px}
+  .legend em i{
+    width:9px;height:9px;border-radius:3px;border:1.5px solid var(--red);
+    box-shadow:0 0 7px rgba(255,95,109,.5);display:inline-block;
+  }
+  .legend kbd{
+    font-family:var(--mono);font-size:10px;color:#7fa0c0;background:#0c1a2a;
+    border:1px solid var(--line);border-radius:4px;padding:1px 4px;margin:0 1px;
+  }
+  .scene{display:none}
+  .scene.on{display:block}
+  .link{stroke:#26466a;stroke-width:3;stroke-linecap:round}
+  .link.thin{stroke-width:2.4}
+  .node rect{fill:#0e1c2e;stroke:#2a4b6c;stroke-width:1.4;transition:.25s}
+  .node .nm{fill:#dbe9ff;font-size:17px;font-weight:700;text-anchor:middle;letter-spacing:.5px}
+  .node .ip{fill:#6f8aab;font-size:12px;text-anchor:middle;font-family:var(--mono)}
+  .node.alert rect{stroke:var(--red);fill:#2a1219}
+  .node.alert{animation:beat 1.25s ease-in-out infinite}
+  @keyframes beat{0%,100%{opacity:1}50%{opacity:.55}}
+  .lbl{fill:#4f6c8d;font-size:11px;text-anchor:middle;font-family:var(--mono)}
+  .port{fill:#3c5c7d;font-size:9px;text-anchor:middle;font-family:var(--mono)}
+  /* ---------- case panel ---------- */
+  .panel{display:flex;flex-direction:column;min-height:0;overflow-y:auto;overflow-x:hidden}
+  .panel::after{
+    content:"NETWORK ER";position:absolute;right:12px;bottom:6px;pointer-events:none;
+    font-size:38px;font-weight:800;letter-spacing:3px;color:rgba(90,150,200,.055);
+  }
+  .ptop{padding:12px 16px 0}
+  .meta{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--dim2);flex-wrap:wrap}
+  .prio{
+    font-family:var(--mono);font-size:10px;font-weight:700;padding:2px 6px;border-radius:5px;
+    border:1px solid var(--line2);
+  }
+  .prio.p1{color:#ff9aa2;border-color:rgba(255,95,109,.5);background:rgba(255,95,109,.12)}
+  .prio.p2{color:#ffd18a;border-color:rgba(255,200,87,.42);background:rgba(255,200,87,.09)}
+  .prio.p3{color:#9fc4e8;border-color:#2a4b6c;background:#122437}
+  .meta .id{font-family:var(--mono);font-size:10.5px;color:#7fa8cc;letter-spacing:.2px}
+  .meta2{font-size:10.5px;color:#6b86a3;margin:5px 0 0}
+  .tagg{margin:7px 0 8px}
+  .tagx{
+    padding:3px 8px;border-radius:6px;background:rgba(61,220,255,.1);
+    border:1px solid rgba(61,220,255,.25);color:#7fe4ff;font-size:10.5px;
+  }
+  .ptitle{font-size:15px;font-weight:700;line-height:1.45;margin:0 0 2px}
+  /* ---------- evidence ---------- */
+  .evs{display:flex;flex-direction:column;gap:8px;margin-top:9px}
+  .ev{border:1px solid var(--line);border-radius:9px;overflow:hidden;background:#08111d}
+  .evsrc{
+    padding:5px 10px;font-size:10px;color:#7fa8cc;background:#0b1828;
+    border-bottom:1px solid var(--line);font-family:var(--mono);letter-spacing:.3px;
+  }
+  .ev pre{
+    margin:0;padding:8px 10px;font-family:var(--mono);font-size:11px;line-height:1.55;
+    color:#a9c6e2;white-space:pre;overflow:auto;max-height:150px;
+  }
+  .note{
+    margin:9px 0 0;padding:8px 10px;border-left:2px solid var(--amber);
+    background:rgba(255,200,87,.06);border-radius:0 8px 8px 0;
+    font-size:11.5px;line-height:1.6;color:#c9b98f;
+  }
+  .note b{display:block;font-size:10px;color:#a8915f;font-weight:600;margin-bottom:2px;letter-spacing:.5px}
+  /* ---------- CLI ---------- */
+  .goalbox{
+    margin-top:9px;border:1px solid #24405c;background:#0b1a2b;border-radius:9px;padding:8px 10px;
+  }
+  .goalbox .row{display:flex;gap:8px;font-size:11px;line-height:1.65}
+  .goalbox .row+.row{margin-top:3px}
+  .goalbox b{flex:none;color:#7fa8cc;font-weight:600;font-size:10.5px;padding-top:1px}
+  .goalbox span{color:#cfe2f5}
+  .goalbox code{color:#8ff0c0;font-family:var(--mono);font-size:10.5px;white-space:pre-wrap;word-break:break-word}
+  .cliterm{margin-top:9px}
+  .termout{
+    height:128px;overflow-y:auto;padding:8px 10px;background:#08111d;
+    font-family:var(--mono);font-size:11px;line-height:1.6;color:#a9c6e2;
+    white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;
+  }
+  .termout .cl{color:#5fe6ff}
+  .termout .er{color:#ff7b87}
+  .termout .ok{color:#6ff0a8}
+  .termin{display:flex;align-items:center;gap:6px;padding:7px 8px;border-top:1px solid var(--line);background:#0a1420}
+  .termin .ps{font-family:var(--mono);font-size:11px;color:#5fe6ff;flex:none}
+  .termin input{
+    flex:1;min-width:0;background:transparent;border:0;outline:0;color:#e7f0ff;
+    font-family:var(--mono);font-size:11.5px;padding:3px 0;
+  }
+  .termin input::placeholder{color:#4f6c8d}
+  .termin button{
+    flex:none;padding:4px 12px;border-radius:6px;cursor:pointer;font-family:inherit;
+    font-size:11px;font-weight:700;color:#bff1ff;background:#153a52;border:1px solid #2d6f8c;
+  }
+  .termin button:disabled{opacity:.45;cursor:default}
+  /* ---------- options ---------- */
+  .opts{padding:10px 16px 4px;display:flex;flex-direction:column;gap:7px;min-height:0}
+  .opt{
+    display:flex;align-items:flex-start;gap:10px;text-align:left;width:100%;
+    padding:9px 11px;border-radius:9px;cursor:pointer;font-family:inherit;
+    background:var(--panel2);border:1px solid var(--line);color:var(--txt);
+    font-size:12.5px;line-height:1.5;transition:.16s;
+  }
+  .opt:hover:not(.dis){border-color:var(--line2);transform:translateX(2px);background:#132741}
+  .opt b{
+    flex:none;width:20px;height:20px;border-radius:5px;display:grid;place-items:center;
+    background:#173049;color:#7fb6d6;font-size:11px;font-family:var(--mono);
+  }
+  .opt.ok{border-color:var(--green);background:rgba(62,224,138,.1)}
+  .opt.ok b{background:var(--green);color:#04140c}
+  .opt.bad{border-color:var(--red);background:rgba(255,95,109,.1)}
+  .opt.bad b{background:var(--red);color:#1a0508}
+  .opt.dis{cursor:default;opacity:.92}
+  /* ---------- feedback ---------- */
+  .fb{
+    margin:10px 16px 12px;padding:11px 12px;border-radius:10px;border:1px solid var(--line);
+    background:#0b1826;animation:up .22s ease-out;
+  }
+  @keyframes up{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .fb.ok{border-color:rgba(62,224,138,.45)}
+  .fb.bad{border-color:rgba(255,95,109,.45)}
+  .fbh{font-size:12.5px;font-weight:700;margin-bottom:5px}
+  .fb.ok .fbh{color:var(--green)}.fb.bad .fbh{color:var(--red)}
+  .fb p{margin:0 0 8px;font-size:11.5px;line-height:1.65;color:#a9c0da}
+  .fbmeta{
+    display:flex;align-items:center;gap:12px;margin:-1px 0 7px;
+    font-family:var(--mono);font-size:10.5px;color:var(--dim2);
+  }
+  .fbmeta i{font-style:normal;color:#ffd18a}
+  .fix{
+    display:flex;gap:8px;align-items:flex-start;background:#07101a;border:1px solid #193049;
+    border-radius:7px;padding:7px 9px;font-family:var(--mono);font-size:11px;line-height:1.6;
+  }
+  .fix span{flex:none;color:var(--dim2);font-family:inherit;font-size:10px;padding-top:1px}
+  .fix code{color:#8ff0c0;white-space:pre-wrap;word-break:break-all}
+  .footer{display:flex;align-items:center;gap:12px;padding:0 18px 14px}
+  .bars{display:flex;gap:6px;flex:1}
+  .bars i{height:4px;border-radius:2px;background:#183049;flex:1;transition:.3s}
+  .bars i.on{background:var(--cyan)}
+  .bars i.ok{background:var(--green)}
+  .bars i.no{background:var(--red)}
+  .timerwrap{display:flex;align-items:center;gap:8px;min-width:118px}
+  .timerbar{width:70px;height:4px;border-radius:2px;background:#183049;overflow:hidden}
+  .timerbar>i{display:block;height:100%;background:var(--cyan);width:100%}
+  .timerbar.warn>i{background:var(--red)}
+  .tnum{font-family:var(--mono);font-size:12px;color:var(--dim);min-width:30px;text-align:right}
+  .next{
+    padding:8px 16px;border-radius:9px;border:1px solid #2d6f8c;cursor:pointer;font-family:inherit;
+    background:linear-gradient(180deg,#1a4a60,#123347);color:#bff1ff;font-size:12.5px;font-weight:700;
+  }
+  .next:hover{filter:brightness(1.12)}
+  /* ---------- overlays ---------- */
+  .overlay{
+    position:fixed;inset:0;z-index:50;display:none;place-items:center;padding:20px;
+    background:rgba(4,9,16,.82);backdrop-filter:blur(6px);
+  }
+  .overlay.on{display:grid}
+  .sheet{
+    width:min(580px,100%);max-height:88dvh;overflow:auto;border-radius:16px;
+    background:linear-gradient(180deg,#0f2135,#0a1524);border:1px solid #24405c;
+    padding:26px 26px 22px;box-shadow:0 24px 80px rgba(0,0,0,.55);
+  }
+  .sheet h2{margin:0 0 6px;font-size:19px}
+  .sheet .lead{color:var(--dim);font-size:12.5px;line-height:1.7;margin:0 0 16px}
+  .rules{display:grid;gap:9px;margin:0 0 20px}
+  .rule{display:flex;gap:10px;font-size:12.5px;line-height:1.55;color:#b8cbe3}
+  .rule b{color:var(--cyan);font-family:var(--mono);font-size:11px;padding-top:2px}
+  .cta{
+    width:100%;padding:12px;border-radius:10px;border:1px solid #2f7d9c;cursor:pointer;
+    font-family:inherit;font-size:14px;font-weight:700;color:#04121a;
+    background:linear-gradient(180deg,#6ce4ff,#31b7dd);
+  }
+  .cta:hover{filter:brightness(1.06)}
+  .score{display:flex;align-items:flex-end;gap:10px;margin:6px 0 4px}
+  .score b{font-size:44px;line-height:1;font-family:var(--mono);color:var(--cyan)}
+  .score span{color:var(--dim2);font-size:12px;padding-bottom:5px}
+  .rank{color:var(--amber);font-size:13px;font-weight:700;margin-bottom:14px}
+  .mini{display:flex;gap:10px;margin-bottom:16px}
+  .mini div{flex:1;background:#0b1826;border:1px solid var(--line);border-radius:9px;padding:9px 11px}
+  .mini span{display:block;font-size:10.5px;color:var(--dim2);margin-bottom:3px}
+  .mini b{font-family:var(--mono);font-size:16px}
+  .ho{width:100%;border-collapse:collapse;margin:0 0 16px}
+  .ho th{
+    text-align:left;font-weight:600;color:var(--dim2);font-size:10.5px;
+    padding:5px 6px;border-bottom:1px solid #1c3149;
+  }
+  .ho th:last-child{text-align:right}
+  .ho td{padding:6px;border-bottom:1px dashed #16293f;font-family:var(--mono);font-size:10.5px;color:#a9c0da}
+  .ho td.v{font-family:inherit;font-size:11px}
+  .ho .okv{color:var(--green)}.ho .nov{color:var(--red)}
+  .ho td.sc{text-align:right;color:#ffd18a}
+  .review{margin:0 0 18px;max-height:180px;overflow:auto}
+  .rv{padding:9px 0;border-bottom:1px dashed #1c3149;font-size:12px;line-height:1.6}
+  .rv b{color:#ffd18a;display:block;font-size:11.5px;margin-bottom:2px}
+  .rv span{color:var(--dim)}
+  .rv em{color:#8ff0c0;font-style:normal;font-family:var(--mono);font-size:10.5px;display:block;margin-top:3px}
+  /* ---------- mobile ---------- */
+  @media(max-width:980px){
+    html,body{max-width:100%;overflow-x:hidden}
+    body{height:auto;min-height:100dvh;overflow-y:auto}
+    header{width:100%;padding:10px 12px;gap:8px}
+    main{grid-template-columns:1fr;min-height:auto;padding:0 12px 10px;gap:12px;width:100%}
+    .card{width:100%;max-width:100%}
+    h1{font-size:15px}
+    .brand{flex:1 1 0;min-width:0;margin-right:0}
+    .brand>div{min-width:0;overflow:hidden}
+    .sub{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+    .stats{
+      order:3;flex:1 1 100%;width:auto;display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;
+    }
+    .chip{padding:5px 6px;min-width:0;justify-content:center;gap:5px;font-size:11px}
+    .chip b{font-size:13px}
+    button.ghost{padding:6px 9px;flex:none}
+    .stage{min-height:auto}
+    .stagebody{
+      padding:4px;display:block;overflow-x:auto;overflow-y:hidden;
+      min-width:0;max-width:100%;-webkit-overflow-scrolling:touch;
+    }
+    svg#topo{width:720px;max-width:none;height:auto}
+    .legend{font-size:10px;padding:7px 10px;gap:6px;flex-wrap:wrap}
+    .legend kbd{font-size:9px}
+    .pan{display:block}
+    .panel{overflow:visible}
+    .opts{max-height:none;padding:10px 12px 2px}
+    .opt{font-size:12.5px;padding:10px 11px}
+    .ev pre{max-height:170px}
+    .ptop{padding:10px 12px 0}
+    .ptitle{font-size:14px}
+    .fb{margin:0 12px 10px}
+    body{padding-bottom:calc(62px + env(safe-area-inset-bottom))}
+    .footer{
+      position:fixed;left:0;right:0;bottom:0;z-index:30;
+      padding:8px 12px calc(8px + env(safe-area-inset-bottom));
+      background:rgba(7,13,24,.96);backdrop-filter:blur(10px);
+      border-top:1px solid var(--line);flex-wrap:wrap;gap:10px;
+    }
+    .timerwrap{min-width:100px}
+    .next{margin-left:auto}
+    .sheet{padding:20px 18px 18px}
+    .mini{flex-wrap:wrap}
+    .mini div{flex:1 1 40%}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="logo" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#5fe6ff" stroke-width="1.8" stroke-linecap="round">
+        <path d="M3 12h4l2-5 3 10 2-5h7"/>
+      </svg>
+    </div>
+    <div>
+      <h1 id="t-title">网络急诊室</h1>
+      <div class="sub" id="t-sub">GlobalTech 一线运维 · 路由故障处置</div>
+    </div>
+  </div>
+  <div class="stats">
+    <div class="chip"><span id="t-score">积分</span><b id="v-score">0</b><em class="max" id="v-max">/500</em></div>
+    <div class="chip hot" id="combo-chip"><span id="t-combo">连击</span><b id="v-combo">0</b></div>
+    <div class="chip"><span id="t-case">工单</span><b id="v-case">1/5</b></div>
+  </div>
+  <button class="ghost" id="lang">EN</button>
+  <button class="ghost" id="restart">↻</button>
+</header>
+
+<main>
+  <section class="card stage">
+    <div class="stagehead"><i class="dot"></i><span id="t-live">实时拓扑 · 故障定位中</span><span class="pan" id="t-pan"></span></div>
+    <div class="stagebody">
+      <svg id="topo" viewBox="0 0 900 430" preserveAspectRatio="xMidYMid meet">
+        <!-- ============ WAN ============ -->
+        <g id="scene-wan" class="scene on">
+          <line class="link" x1="134" y1="200" x2="236" y2="200"/>
+          <line class="link" x1="324" y1="200" x2="436" y2="200"/>
+          <line class="link" x1="524" y1="200" x2="636" y2="200"/>
+          <line class="link" x1="724" y1="200" x2="806" y2="200"/>
+          <line class="link thin" x1="480" y1="228" x2="480" y2="322"/>
+          <text class="lbl" x="185" y="222">192.168.1.0/24</text>
+          <text class="lbl" x="380" y="222">10.0.12.0/30</text>
+          <text class="lbl" x="580" y="222">10.0.23.0/30</text>
+          <text class="lbl" x="765" y="222">192.168.3.0/24</text>
+          <text class="lbl" x="480" y="290">192.168.2.0/24</text>
+
+          <g class="node" id="n-pc1">
+            <rect x="46" y="172" width="88" height="56" rx="10"/>
+            <text class="nm" x="90" y="196">PC1</text>
+            <text class="ip" x="90" y="213">192.168.1.10</text>
+          </g>
+          <g class="node" id="n-r1">
+            <rect x="236" y="172" width="88" height="56" rx="10"/>
+            <text class="nm" x="280" y="196">R1</text>
+            <text class="ip" x="280" y="213">AR2220</text>
+          </g>
+          <g class="node" id="n-r2">
+            <rect x="436" y="172" width="88" height="56" rx="10"/>
+            <text class="nm" x="480" y="196">R2</text>
+            <text class="ip" x="480" y="213">AR2220</text>
+          </g>
+          <g class="node" id="n-r3">
+            <rect x="636" y="172" width="88" height="56" rx="10"/>
+            <text class="nm" x="680" y="196">R3</text>
+            <text class="ip" x="680" y="213">AR2220</text>
+          </g>
+          <g class="node" id="n-pc3">
+            <rect x="806" y="172" width="88" height="56" rx="10"/>
+            <text class="nm" x="850" y="196">PC3</text>
+            <text class="ip" x="850" y="213">192.168.3.10</text>
+          </g>
+          <g class="node" id="n-pc2">
+            <rect x="436" y="322" width="88" height="56" rx="10"/>
+            <text class="nm" x="480" y="346">PC2</text>
+            <text class="ip" x="480" y="363">192.168.2.10</text>
+          </g>
+        </g>
+
+        <!-- ============ VLAN ============ -->
+        <g id="scene-vlan" class="scene">
+          <line class="link" x1="164" y1="122" x2="366" y2="210"/>
+          <line class="link" x1="164" y1="318" x2="366" y2="230"/>
+          <line class="link" x1="494" y1="220" x2="676" y2="220"/>
+          <text class="lbl" x="286" y="150">VLAN 10 · access</text>
+          <text class="lbl" x="286" y="296">VLAN 20 · access</text>
+          <text class="lbl" x="585" y="206">Trunk · 802.1Q</text>
+
+          <g class="node" id="v-pc1">
+            <rect x="76" y="94" width="88" height="56" rx="10"/>
+            <text class="nm" x="120" y="118">PC1</text>
+            <text class="ip" x="120" y="135">192.168.10.10</text>
+          </g>
+          <g class="node" id="v-pc2">
+            <rect x="76" y="290" width="88" height="56" rx="10"/>
+            <text class="nm" x="120" y="314">PC2</text>
+            <text class="ip" x="120" y="331">192.168.20.10</text>
+          </g>
+          <g class="node" id="v-sw">
+            <rect x="366" y="186" width="128" height="68" rx="10"/>
+            <text class="nm" x="430" y="214">LSW1</text>
+            <text class="ip" x="430" y="232">S5700</text>
+          </g>
+          <g class="node" id="v-ar">
+            <rect x="676" y="186" width="128" height="68" rx="10"/>
+            <text class="nm" x="740" y="212">AR1</text>
+            <text class="ip" x="740" y="230">G0/0/0.10 / .20</text>
+          </g>
+        </g>
+      </svg>
+    </div>
+    <div class="legend">
+      <em><i></i><span id="t-legend">红框：本单受影响的两端</span></em>
+      <span id="t-keys"><kbd>1</kbd>–<kbd>4</kbd> 选择 · <kbd>↵</kbd> 下一单</span>
+    </div>
+  </section>
+
+  <section class="card panel">
+    <div class="ptop">
+      <div class="meta">
+        <span class="prio p2" id="v-pri">P2</span>
+        <span class="id" id="v-id">INC-20261110-0000</span>
+        <span id="v-site">—</span>
+      </div>
+      <div class="meta2" id="v-meta2">—</div>
+      <div class="tagg"><span class="tagx" id="v-tag">—</span></div>
+      <h3 class="ptitle" id="v-title">—</h3>
+      <div class="evs" id="v-evs"></div>
+      <p class="note" id="v-note" style="display:none"></p>
+      <div id="v-cli" style="display:none">
+        <div class="goalbox">
+          <div class="row"><b id="t-goal">处置目标</b><span id="v-goal">—</span></div>
+          <div class="row"><b id="t-syntax">命令语法</b><code id="v-syntax">—</code></div>
+        </div>
+        <div class="term cliterm">
+          <div class="termbar"><i></i><i></i><i></i><span id="v-termhead">R3 · console</span></div>
+          <div class="termout" id="v-termout"></div>
+          <div class="termin">
+            <span class="ps" id="v-prompt">&lt;R3&gt;</span>
+            <input id="v-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="输入命令，? 查看帮助">
+            <button id="v-send">执行</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="opts" id="v-opts"></div>
+    <div id="v-fb"></div>
+  </section>
+</main>
+
+<div class="footer">
+  <div class="timerwrap">
+    <div class="timerbar" id="bar"><i id="barfill"></i></div>
+    <span class="tnum" id="v-time">25s</span>
+  </div>
+  <div class="bars" id="v-bars"></div>
+  <button class="next" id="next" style="display:none">下一张工单 →</button>
+</div>
+
+<!-- start -->
+<div class="overlay on" id="ov-start">
+  <div class="sheet">
+    <h2 id="t-start-title">接单前，先看三条</h2>
+    <p class="lead" id="t-start-lead">你是 GlobalTech 网络组的值班工程师。5 张工单来自不同部门，现象、命令回显和现场备注都在工单里。</p>
+    <div class="rules">
+      <div class="rule"><b>01</b><span id="t-r1">每局 5 张：前 3 张诊断，后 2 张处置。</span></div>
+      <div class="rule"><b>02</b><span id="t-r2">诊断单限时 25 秒，从 4 个结论里选出根因。</span></div>
+      <div class="rule"><b>03</b><span id="t-r3">处置单限时 120 秒，在终端里敲 VRP 命令把故障修好。</span></div>
+      <div class="rule"><b>04</b><span id="t-r4">每张满分 100，总分 500：基础 60 + 速度 30 + 连击 10。</span></div>
+    </div>
+    <button class="cta" id="btn-start">开始值班</button>
+  </div>
+</div>
+
+<!-- result -->
+<div class="overlay" id="ov-result">
+  <div class="sheet">
+    <h2 id="t-res-title">交班报告</h2>
+    <div class="score"><b id="v-final">0</b><span id="v-finalmax">/500 分</span></div>
+    <div class="rank" id="v-rank">—</div>
+    <div class="mini">
+      <div><span id="t-res-acc">诊断准确率</span><b id="v-acc">0%</b></div>
+      <div><span id="t-res-right">正确</span><b id="v-right">0/5</b></div>
+      <div><span id="t-res-best">最高连击</span><b id="v-best">0</b></div>
+      <div><span id="t-res-avg">平均判断</span><b id="v-avg">0s</b></div>
+    </div>
+    <table class="ho">
+      <thead><tr><th id="t-th-ticket">工单号</th><th id="t-th-verdict">判定</th><th id="t-th-time">用时</th><th id="t-th-score">得分</th></tr></thead>
+      <tbody id="v-ho"></tbody>
+    </table>
+    <div class="review" id="v-review"></div>
+    <button class="cta" id="btn-again">再值一班</button>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   工单库（与小程序共用同一份数据）
+   ========================================================= */
+const CASES = [
+  {
+    scene: "wan", watch: ["n-pc1", "n-pc3"],
+    meta: {
+      id: "INC-20261110-0142",
+      site: { zh: "总部 · 3F 财务部", en: "HQ · 3F Finance" },
+      reporter: { zh: "王倩", en: "Wang Qian" },
+      time: { zh: "09:42 报障", en: "09:42" },
+      priority: "P2",
+      affected: { zh: "12 人", en: "12 users" }
+    },
+    tag: { zh: "任务二 · 静态路由", en: "Task 2 · Static Route" },
+    title: { zh: "财务部访问不了研发部文件服务器", en: "Finance cannot reach the R&D file server" },
+    evidence: [
+      {
+        src: "PC1 · ping",
+        lines: [
+          "PC>ping 192.168.3.10",
+          "Ping 192.168.3.10: 32 data bytes, Press Ctrl_C to break",
+          "Request timeout!",
+          "Request timeout!",
+          "Request timeout!",
+          "--- 192.168.3.10 ping statistics ---",
+          "  5 packet(s) transmitted, 0 packet(s) received",
+          "  100.00% packet loss"
+        ]
+      },
+      {
+        src: "R3 · display ip routing-table",
+        lines: [
+          "<R3>display ip routing-table",
+          "Route Flags: R - relay, D - download to fib",
+          "------------------------------------------------------------------------------",
+          "Routing Tables: Public",
+          "         Destinations : 4        Routes : 4",
+          "Destination/Mask    Proto   Pre  Cost      Flags NextHop         Interface",
+          "     10.0.23.0/30   Direct  0    0           D   10.0.23.2       G0/0/0",
+          "     10.0.23.2/32   Direct  0    0           D   127.0.0.1       G0/0/0",
+          "    192.168.3.0/24  Direct  0    0           D   192.168.3.1     G0/0/1",
+          "    192.168.3.1/32  Direct  0    0           D   127.0.0.1       G0/0/1"
+        ]
+      }
+    ],
+    note: {
+      zh: "R1 上 tracert 192.168.3.10 能走到 10.0.23.2；换 PC3 反向 ping 192.168.1.10 同样超时。",
+      en: "tracert from R1 reaches 10.0.23.2, but PC3 pinging 192.168.1.10 also times out."
+    },
+    mode: "cli",
+    device: "R3",
+    limit: 120,
+    goal: { zh: "让 PC1 能 ping 通 192.168.3.10", en: "Make PC1 able to ping 192.168.3.10" },
+    syntax: { zh: "ip route-static <目的网络> <掩码> <下一跳>", en: "ip route-static <network> <mask> <next-hop>" },
+    checks: [
+      { view: "system", re: "^ip route-static 192\\.168\\.1\\.0 (24|255\\.255\\.255\\.0) 10\\.0\\.23\\.1$", flag: "r" }
+    ],
+    solution: ["system-view", "ip route-static 192.168.1.0 24 10.0.23.1"],
+    why: {
+      zh: "去程通、回程无路。R3 的路由表里只有直连网段，回包找不到 192.168.1.0/24 的出口，被直接丢弃——所以表现为“能出去、回不来”。",
+      en: "Forward works, return fails. R3's table holds only connected networks, so replies to 192.168.1.0/24 have no exit and are dropped."
+    },
+    fix: "[R3]ip route-static 192.168.1.0 255.255.255.0 10.0.23.1"
+  },
+
+  {
+    scene: "wan", watch: ["n-pc1", "n-pc2"],
+    meta: {
+      id: "INC-20261110-0157",
+      site: { zh: "总部 · 5F 市场部", en: "HQ · 5F Marketing" },
+      reporter: { zh: "李昊", en: "Li Hao" },
+      time: { zh: "10:15 报障", en: "10:15" },
+      priority: "P3",
+      affected: { zh: "6 人", en: "6 users" }
+    },
+    tag: { zh: "任务二 · 掩码与最长匹配", en: "Task 2 · Mask & Longest Match" },
+    title: { zh: "市场部一半地址访问异常", en: "Half of the Marketing subnet is unreachable" },
+    evidence: [
+      {
+        src: "R1 · display ip routing-table protocol static",
+        lines: [
+          "<R1>display ip routing-table protocol static",
+          "Route Flags: R - relay, D - download to fib",
+          "------------------------------------------------------------------------------",
+          "Public routing table : Static",
+          "         Routes : 1",
+          "Destination/Mask    Proto   Pre  Cost      Flags NextHop         Interface",
+          "    192.168.2.0/25  Static  60   0           RD  10.0.12.2       G0/0/1"
+        ]
+      },
+      {
+        src: "PC1 · 分段验证",
+        lines: [
+          "PC>ping 192.168.2.10",
+          "Reply from 192.168.2.10: bytes=32 time=3ms TTL=254",
+          "Reply from 192.168.2.10: bytes=32 time=2ms TTL=254",
+          "",
+          "PC>ping 192.168.2.200",
+          "Request timeout!",
+          "Request timeout!"
+        ]
+      }
+    ],
+    note: {
+      zh: "R2 的 G0/0/1 地址 192.168.2.1/24 配置正常，PC2 本机 ping 网关能通，说明二层和接口都没问题。",
+      en: "R2's G0/0/1 is correctly 192.168.2.1/24 and PC2 can ping its gateway, so Layer 2 is fine."
+    },
+    options: [
+      { zh: "静态路由掩码写成 /25，只覆盖了 .0–.127", en: "The static route is /25 and only covers .0–.127" },
+      { zh: "PC2 的网线接触不良", en: "PC2's cable is loose" },
+      { zh: "R2 没有配置默认路由", en: "R2 has no default route" },
+      { zh: "静态路由的 Preference 配得太高", en: "The static route preference is too high" }
+    ],
+    answer: 0,
+    why: {
+      zh: "192.168.2.0/25 只覆盖 192.168.2.0–127。.200 不在其中，路由表里没有更精确的匹配，也没有默认路由，报文被丢弃；.10 刚好落在范围内所以能通。",
+      en: "192.168.2.0/25 covers only .0–.127. .200 falls outside, no route matches, and there is no default route, so packets are dropped."
+    },
+    fix: "[R1]undo ip route-static 192.168.2.0 255.255.255.128 10.0.12.2\n[R1]ip route-static 192.168.2.0 255.255.255.0 10.0.12.2"
+  },
+
+  {
+    scene: "wan", watch: ["n-pc1", "n-pc3"],
+    meta: {
+      id: "INC-20261110-0163",
+      site: { zh: "总部 · 研发部新网段", en: "HQ · R&D new subnet" },
+      reporter: { zh: "运维值班", en: "NOC shift" },
+      time: { zh: "11:05 巡检发现", en: "11:05 (monitoring)" },
+      priority: "P2",
+      affected: { zh: "研发部整段", en: "Whole R&D subnet" }
+    },
+    tag: { zh: "任务三 · RIP", en: "Task 3 · RIP" },
+    title: { zh: "新增研发部网段后，全网都学不到", en: "A new subnet never appears in anyone's table" },
+    evidence: [
+      {
+        src: "R1 · display ip routing-table protocol rip",
+        lines: [
+          "<R1>display ip routing-table protocol rip",
+          "Route Flags: R - relay, D - download to fib",
+          "------------------------------------------------------------------------------",
+          "Public routing table : RIP",
+          "         Routes : 2",
+          "Destination/Mask    Proto   Pre  Cost      Flags NextHop         Interface",
+          "    192.168.2.0/24  RIP     100  1           D   10.0.12.2       G0/0/1",
+          "     10.0.23.0/30   RIP     100  1           D   10.0.12.2       G0/0/1"
+        ]
+      },
+      {
+        src: "R3 · display this（RIP 视图）",
+        lines: [
+          "[R3]rip 1",
+          "[R3-rip-1]display this",
+          "#",
+          "rip 1",
+          " version 2",
+          " network 10.0.0.0",
+          "#",
+          "return"
+        ]
+      }
+    ],
+    note: {
+      zh: "R3 的 G0/0/1 地址 192.168.3.1/24 已配、接口 UP，本地直连路由也在；只是这条网段从来没被通告出去。",
+      en: "R3's G0/0/1 is up with 192.168.3.1/24 and the connected route exists, yet the subnet was never advertised."
+    },
+    options: [
+      { zh: "R3 的 RIP 里只写了 network 10.0.0.0，漏宣告 192.168.3.0", en: "R3's RIP only has network 10.0.0.0, missing 192.168.3.0" },
+      { zh: "R1 的 RIP 版本是 v1", en: "R1 runs RIPv1" },
+      { zh: "R2 与 R3 之间链路中断", en: "The link between R2 and R3 is down" },
+      { zh: "RIP 的 180 秒老化时间到了", en: "The 180-second aging timer expired" }
+    ],
+    answer: 0,
+    why: {
+      zh: "RIP 只通告 network 命令覆盖的接口网段。10.0.0.0 是有类的 A 类写法，在 VRP 里只匹配 10.0.0.0/8 的接口，192.168.3.0/24 没被包含，自然不会进任何路由表。",
+      en: "RIP advertises only interfaces covered by network statements. 10.0.0.0 is classful and matches only 10/8 interfaces here, so 192.168.3.0/24 is never advertised."
+    },
+    fix: "[R3]rip 1\n[R3-rip-1]network 192.168.3.0"
+  },
+
+  {
+    scene: "wan", watch: ["n-r2", "n-r1"],
+    meta: {
+      id: "INC-20261110-0171",
+      site: { zh: "分部 · 路由器替换后", en: "Branch · after router swap" },
+      reporter: { zh: "驻场工程师", en: "On-site engineer" },
+      time: { zh: "13:20 变更后", en: "13:20 after change" },
+      priority: "P1",
+      affected: { zh: "分部全部业务", en: "All branch traffic" }
+    },
+    tag: { zh: "任务三 · RIPv1 与 RIPv2", en: "Task 3 · RIPv1 vs RIPv2" },
+    title: { zh: "分部的备用路由器上架后学不到任何路由", en: "The standby router learns nothing after swap" },
+    evidence: [
+      {
+        src: "R2 · display this（RIP 视图）",
+        lines: [
+          "[R2]rip 1",
+          "[R2-rip-1]display this",
+          "#",
+          "rip 1",
+          " version 1",
+          " network 10.0.0.0",
+          "#",
+          "return"
+        ]
+      },
+      {
+        src: "R2 · display rip 1 route",
+        lines: [
+          "<R2>display rip 1 route",
+          "Route Flags: R - RIP, T - TRIGGERED",
+          "------------------------------------------------------------------------------",
+          "Prefixes : 0",
+          "Destination/Mask       Nexthop        Cost  Tag   Flags  Time",
+          "(empty)"
+        ]
+      }
+    ],
+    note: {
+      zh: "R1、R3 的 RIP 路由表都正常；R2 能 ping 通邻居直连地址，是备用机上架时按旧模板配的。",
+      en: "R1 and R3 are fine; R2 can ping its neighbors, but the spare was configured from an old template."
+    },
+    options: [
+      { zh: "R2 跑的是 RIPv1，与邻居的 v2 报文不兼容", en: "R2 runs RIPv1, incompatible with its neighbors' v2" },
+      { zh: "R2 的接口 IP 网段配错", en: "R2's interface IP is in the wrong subnet" },
+      { zh: "R2 缺少静态路由", en: "R2 is missing static routes" },
+      { zh: "R2 的 Router ID 与其他设备冲突", en: "R2's Router ID conflicts with another device" }
+    ],
+    answer: 0,
+    why: {
+      zh: "RIPv1 只发有类路由、不带掩码，收到 v2 报文也认不出；两端版本不一致时更新会被丢弃，路由表为空。统一成 version 2 即可。",
+      en: "RIPv1 is classful and carries no mask, so v2 updates are unusable. Version mismatch causes updates to be dropped and the table stays empty."
+    },
+    fix: "[R2]rip 1\n[R2-rip-1]version 2"
+  },
+
+  {
+    scene: "wan", watch: ["n-r2", "n-r3"],
+    meta: {
+      id: "INC-20261110-0188",
+      site: { zh: "总部 ↔ 分部 OSPF 互联", en: "HQ ↔ Branch OSPF link" },
+      reporter: { zh: "网络组", en: "Network team" },
+      time: { zh: "14:02 割接后", en: "14:02 after cutover" },
+      priority: "P1",
+      affected: { zh: "跨区业务", en: "Inter-area traffic" }
+    },
+    tag: { zh: "任务四 · OSPF 区域", en: "Task 4 · OSPF Area" },
+    title: { zh: "总部与分部之间 OSPF 邻居起不来", en: "OSPF adjacency never forms between HQ and branch" },
+    evidence: [
+      {
+        src: "R2 · display ospf peer",
+        lines: [
+          "<R2>display ospf peer",
+          "OSPF Process 1 with Router ID 2.2.2.2",
+          "--------------------------------------------------------------",
+          " Area 0.0.0.0 interface 10.0.23.1 (GigabitEthernet0/0/1)'s neighbors",
+          " (no neighbor)",
+          " Area 0.0.0.0 interface 10.0.12.2 (GigabitEthernet0/0/0)'s neighbors",
+          " Router ID: 1.1.1.1    Address: 10.0.12.1    State: Full"
+        ]
+      },
+      {
+        src: "R3 · display this（OSPF 视图）",
+        lines: [
+          "[R3]ospf 1",
+          "[R3-ospf-1]display this",
+          "#",
+          "ospf 1",
+          " area 0.0.0.1",
+          "  network 10.0.23.0 0.0.0.3",
+          "  network 192.168.3.0 0.0.0.255",
+          "#",
+          "return"
+        ]
+      }
+    ],
+    note: {
+      zh: "R2 与 R1 的邻居是 Full，只有 R2–R3 这条不通；两端接口能互相 ping 通，MTU 都是 1500。",
+      en: "R2↔R1 is Full; only the R2–R3 link fails. Both ends ping each other and MTU is 1500 on both."
+    },
+    mode: "cli",
+    device: "R3",
+    limit: 120,
+    goal: { zh: "修正 R3 的区域配置，让 R2 与 R3 建立 OSPF 邻居", en: "Fix R3's area config so R2 and R3 become OSPF neighbors" },
+    syntax: { zh: "ospf 1 → area 0 → network <网段> <反掩码>", en: "ospf 1 → area 0 → network <net> <wildcard>" },
+    checks: [
+      { view: "area", id: "0.0.0.0", re: "^network 10\\.0\\.23\\.0 0\\.0\\.0\\.3$", flag: "n" }
+    ],
+    solution: ["system-view", "ospf 1", "area 0", "network 10.0.23.0 0.0.0.3"],
+    why: {
+      zh: "同一条链路的两个接口必须属于同一区域，否则 hello 报文因区域不匹配被丢弃，邻居停在 Down，更不会交换 LSA。把 R3 侧改回 area 0 即可。",
+      en: "Both interfaces on a link must be in the same area; otherwise hellos are dropped as area mismatch and the adjacency never forms."
+    },
+    fix: "[R3]ospf 1\n[R3-ospf-1]undo area 0.0.0.1\n[R3-ospf-1]area 0\n[R3-ospf-1-area-0.0.0.0]network 10.0.23.0 0.0.0.3"
+  },
+
+  {
+    scene: "wan", watch: ["n-r1", "n-r2"],
+    meta: {
+      id: "INC-20261110-0194",
+      site: { zh: "总部 · 两台 AR 新建互联", en: "HQ · new AR-to-AR link" },
+      reporter: { zh: "实施组", en: "Implementation" },
+      time: { zh: "14:47 上线验证", en: "14:47 acceptance" },
+      priority: "P2",
+      affected: { zh: "新链路", en: "New link" }
+    },
+    tag: { zh: "任务四 · OSPF 邻居", en: "Task 4 · OSPF Neighbor" },
+    title: { zh: "新链路配完 OSPF，邻居一直建立不起来", en: "A freshly configured OSPF link never becomes adjacent" },
+    evidence: [
+      {
+        src: "R1 · display ospf brief",
+        lines: [
+          "<R1>display ospf brief",
+          "OSPF Process 1 with Router ID 1.1.1.1",
+          " Router ID: 1.1.1.1        Area: 0.0.0.0",
+          " Interfaces: 2 (Up: 2)",
+          " Neighbors: 0 (Full: 0)"
+        ]
+      },
+      {
+        src: "R2 · display ospf brief",
+        lines: [
+          "<R2>display ospf brief",
+          "OSPF Process 1 with Router ID 1.1.1.1",
+          " Router ID: 1.1.1.1        Area: 0.0.0.0",
+          " Interfaces: 2 (Up: 2)",
+          " Neighbors: 0 (Full: 0)"
+        ]
+      }
+    ],
+    note: {
+      zh: "两台设备都是从同一份配置模板刷出来的，接口、区域、认证都一致，但邻居计数始终是 0。",
+      en: "Both were flashed from the same template; interfaces, areas and authentication all match, yet the neighbor count stays 0."
+    },
+    options: [
+      { zh: "两台设备的 Router ID 都是 1.1.1.1", en: "Both devices use Router ID 1.1.1.1" },
+      { zh: "OSPF 进程号不一致", en: "The OSPF process IDs differ" },
+      { zh: "区域号写成了 0.0.0.1", en: "The area was set to 0.0.0.1" },
+      { zh: "接口没有加入 OSPF", en: "The interface is not added to OSPF" }
+    ],
+    answer: 0,
+    why: {
+      zh: "Router ID 在 OSPF 域内必须唯一，两台都是 1.1.1.1 会导致邻居无法建立。进程号只是本地标识，两边不同不影响邻居。",
+      en: "Router IDs must be unique in an OSPF domain. Process IDs are local, so differing values do not break adjacency."
+    },
+    fix: "[R2]ospf 1\n[R2-ospf-1]router id 2.2.2.2\n<R2>reset ospf process"
+  },
+
+  {
+    scene: "vlan", watch: ["v-pc1", "v-pc2"],
+    meta: {
+      id: "INC-20261110-0203",
+      site: { zh: "总部 · 市场部 ↔ 技术部", en: "HQ · Marketing ↔ R&D" },
+      reporter: { zh: "陈默", en: "Chen Mo" },
+      time: { zh: "15:26 报障", en: "15:26" },
+      priority: "P2",
+      affected: { zh: "两个部门", en: "Two departments" }
+    },
+    tag: { zh: "任务五 · 单臂路由", en: "Task 5 · Single-arm Routing" },
+    title: { zh: "市场部跨 VLAN 访问不了技术部", en: "Marketing cannot cross VLANs to reach R&D" },
+    evidence: [
+      {
+        src: "AR1 · display current-configuration interface G0/0/0.20",
+        lines: [
+          "<AR1>display current-configuration interface GigabitEthernet0/0/0.20",
+          "#",
+          "interface GigabitEthernet0/0/0.20",
+          " ip address 192.168.20.1 255.255.255.0",
+          "#",
+          "return"
+        ]
+      },
+      {
+        src: "AR1 · display arp",
+        lines: [
+          "<AR1>display arp | include 192.168.20",
+          "(empty)",
+          "",
+          "<AR1>display interface brief | include 0/0/0",
+          "GigabitEthernet0/0/0        up    up",
+          "GigabitEthernet0/0/0.10     up    up",
+          "GigabitEthernet0/0/0.20     up    up"
+        ]
+      }
+    ],
+    note: {
+      zh: "交换机侧 VLAN 10/20 都在，G0/0/3 是 trunk 且放行了两个 VLAN；子接口状态 up，但一个 ARP 都没学到。",
+      en: "Both VLANs exist and G0/0/3 is a trunk permitting them; the sub-interface is up but no ARP entry is learned."
+    },
+    mode: "cli",
+    device: "AR1",
+    limit: 120,
+    goal: { zh: "补全子接口配置，让 PC2 能 ping 通 192.168.20.1", en: "Complete the sub-interface so PC2 can ping 192.168.20.1" },
+    syntax: { zh: "interface <子接口> → dot1q termination vid <VLAN> → arp broadcast enable", en: "interface <sub-if> → dot1q termination vid <VLAN> → arp broadcast enable" },
+    checks: [
+      { view: "if", name: "GigabitEthernet0/0/0.20", re: "^dot1q termination vid 20$", flag: "d" },
+      { view: "if", name: "GigabitEthernet0/0/0.20", re: "^arp broadcast enable$", flag: "a" }
+    ],
+    solution: [
+      "system-view",
+      "interface GigabitEthernet0/0/0.20",
+      "dot1q termination vid 20",
+      "arp broadcast enable"
+    ],
+    why: {
+      zh: "子接口只有 IP 没有 802.1Q 封装，带 VLAN 20 标签的帧到达后无法解封装，ARP 进不来，跨 VLAN 自然不通。补上 dot1q termination vid 20 并开启 ARP 广播即可。",
+      en: "The sub-interface has an IP but no 802.1Q termination, so tagged frames are dropped and no ARP arrives."
+    },
+    fix: "[AR1]interface GigabitEthernet0/0/0.20\n[AR1-GigabitEthernet0/0/0.20]dot1q termination vid 20\n[AR1-GigabitEthernet0/0/0.20]arp broadcast enable"
+  },
+
+  {
+    scene: "vlan", watch: ["v-pc2", "v-sw"],
+    meta: {
+      id: "INC-20261110-0211",
+      site: { zh: "总部 · 新工位", en: "HQ · new workstation" },
+      reporter: { zh: "IT 支持", en: "IT support" },
+      time: { zh: "16:10 装机后", en: "16:10 after setup" },
+      priority: "P3",
+      affected: { zh: "1 个工位", en: "1 workstation" }
+    },
+    tag: { zh: "任务五 · VLAN 划分", en: "Task 5 · VLAN Assignment" },
+    title: { zh: "新工位电脑连自己的网关都 ping 不通", en: "A new workstation cannot even ping its own gateway" },
+    evidence: [
+      {
+        src: "LSW1 · display vlan",
+        lines: [
+          "<LSW1>display vlan",
+          "The total number of vlans is : 2",
+          "------------------------------------------------------------------------------",
+          "VID  TYPE    PORT LIST",
+          "1    common  UT:Gi0/0/1(D)  UT:Gi0/0/2(U)  UT:Gi0/0/24(U)",
+          "10   common  UT:Gi0/0/1(U)"
+        ]
+      },
+      {
+        src: "LSW1 · display current-configuration interface G0/0/2",
+        lines: [
+          "<LSW1>display current-configuration interface GigabitEthernet0/0/2",
+          "#",
+          "interface GigabitEthernet0/0/2",
+          " port link-type access",
+          " port default vlan 20",
+          "#",
+          "return"
+        ]
+      }
+    ],
+    note: {
+      zh: "配置里明明写了 port default vlan 20，但 display vlan 里没有 VLAN 20，端口实际还留在 VLAN 1。",
+      en: "The config says port default vlan 20, yet VLAN 20 does not exist and the port still sits in VLAN 1."
+    },
+    mode: "cli",
+    device: "LSW1",
+    limit: 120,
+    goal: { zh: "让 G0/0/2 上的 PC2 真正落到 VLAN 20", en: "Make PC2 on G0/0/2 actually join VLAN 20" },
+    syntax: { zh: "vlan batch <VLAN> → interface <端口> → port default vlan <VLAN>", en: "vlan batch <id> → interface <port> → port default vlan <id>" },
+    checks: [
+      { view: "system", re: "^(vlan batch 20|vlan 20)$", flag: "v" },
+      { view: "if", name: "GigabitEthernet0/0/2", re: "^port default vlan 20$", flag: "p" }
+    ],
+    solution: ["system-view", "vlan batch 20", "interface GigabitEthernet0/0/2", "port default vlan 20"],
+    why: {
+      zh: "VLAN 必须先存在，port default vlan 才会生效。命令能敲进去、也不报错，但端口 PVID 不变，PC2 仍留在 VLAN 1，网关自然不通。",
+      en: "The VLAN must exist before port default vlan takes effect. The command is accepted silently but the PVID stays 1."
+    },
+    fix: "[LSW1]vlan batch 20\n[LSW1]interface GigabitEthernet0/0/2\n[LSW1-GigabitEthernet0/0/2]port default vlan 20"
+  }
+];
+
+/* =========================================================
+   文案
+   ========================================================= */
+const UI = {
+  zh:{
+    title:"网络急诊室", sub:"GlobalTech 一线运维 · 路由故障处置",
+    score:"积分", combo:"连击", case:"工单",
+    liveDiag:"实时拓扑 · 故障定位中", liveCli:"实时拓扑 · 处置中",
+    next:"下一张工单", report:"交班报告",
+    ok:"诊断正确", bad:"诊断有误", timeout:"超时未处置",
+    correctIs:"正确结论：", fix:"处置命令",
+    noteLabel:"现场备注", reporter:"报障", impact:"影响",
+    goalLabel:"处置目标", syntaxLabel:"命令语法",
+    send:"执行", cmdPlaceholder:"输入命令，? 查看帮助",
+    cliDone:"配置已生效，故障消除", required:"应执行",
+    legend:"红框：本单受影响的两端",
+    keys:"<kbd>1</kbd>–<kbd>4</kbd> 选择 · <kbd>↵</kbd> 下一单",
+    keysCli:"在右侧终端输入命令 · <kbd>?</kbd> 帮助",
+    pan:"← 左右拖动查看拓扑 →",
+    startTitle:"接单前，先看四条",
+    startLead:"你是 GlobalTech 网络组的值班工程师。5 张工单来自不同部门，现象、命令回显和现场备注都在工单里。",
+    rules:[
+      "每局 5 张：前 3 张诊断，后 2 张处置。",
+      "诊断单限时 25 秒，从 4 个结论里选出根因。",
+      "处置单限时 120 秒，在终端里敲 VRP 命令把故障修好。",
+      "每张满分 100，总分 500：基础 60 + 速度 30 + 连击 10。"
+    ],
+    start:"开始值班",
+    resTitle:"交班报告", unit:"分",
+    acc:"准确率", right:"正确", best:"最高连击", avg:"平均判断",
+    maxUnit:"/500 分", again:"再值一班",
+    thTicket:"工单号", thVerdict:"判定", thTime:"用时", thScore:"得分",
+    verdictOk:"已定位", verdictNo:"误判",
+    ranks:["待培训","实习生","网络工程师","主任工程师"],
+    perfect:"5 单全对，零误判。",
+    perfectSub:"这份判断力可以直接带徒弟了。"
+  },
+  en:{
+    title:"Network ER", sub:"GlobalTech NOC · routing incident response",
+    score:"Points", combo:"Combo", case:"Ticket",
+    liveDiag:"Live topology · locating fault", liveCli:"Live topology · repairing",
+    next:"Next ticket", report:"Handover report",
+    ok:"Diagnosis correct", bad:"Diagnosis wrong", timeout:"Timed out",
+    correctIs:"Correct cause: ", fix:"Remediation",
+    noteLabel:"Field note", reporter:"Reported by", impact:"Impact",
+    goalLabel:"Objective", syntaxLabel:"Syntax",
+    send:"Run", cmdPlaceholder:"Type a command, ? for help",
+    cliDone:"Configuration took effect", required:"Required",
+    legend:"Red = affected endpoints",
+    keys:"<kbd>1</kbd>–<kbd>4</kbd> pick · <kbd>↵</kbd> next",
+    keysCli:"Type in the terminal · <kbd>?</kbd> for help",
+    pan:"← drag to pan the topology →",
+    startTitle:"Four things before you start",
+    startLead:"You are the on-call engineer at GlobalTech NOC. Five tickets are waiting, each with symptoms, CLI output and field notes.",
+    rules:[
+      "5 tickets: 3 diagnosis, then 2 hands-on repairs.",
+      "Diagnosis: 25 seconds, pick the root cause.",
+      "Repair: 120 seconds, type VRP commands to fix it.",
+      "Up to 100 per ticket, 500 total: 60 base + 30 speed + 10 combo."
+    ],
+    start:"Start shift",
+    resTitle:"Handover report", unit:"pts",
+    acc:"Accuracy", right:"Correct", best:"Best combo", avg:"Avg. decision",
+    maxUnit:"/500 pts", again:"Next shift",
+    thTicket:"Ticket", thVerdict:"Verdict", thTime:"Time", thScore:"Points",
+    verdictOk:"Resolved", verdictNo:"Misdiagnosed",
+    ranks:["Trainee","Intern","Network Engineer","Senior Engineer"],
+    perfect:"5 of 5. No misdiagnosis.",
+    perfectSub:"That is a clean shift."
+  }
+};
+
+const HELP = {
+  zh:{
+    user:["system-view            进入系统视图"],
+    system:[
+      "interface <接口>       进入接口视图，如 interface g0/0/2",
+      "rip <进程号>           进入 RIP 视图",
+      "ospf <进程号>          进入 OSPF 视图",
+      "vlan batch <VLAN>      批量创建 VLAN",
+      "ip route-static ...    配置静态路由",
+      "quit                   返回上一级"
+    ],
+    if:[
+      "ip address <IP> <掩码>        配置接口地址",
+      "dot1q termination vid <VLAN>  子接口封装 802.1Q",
+      "arp broadcast enable          允许子接口转发 ARP",
+      "port link-type access|trunk   端口类型",
+      "port default vlan <VLAN>      端口加入 VLAN",
+      "quit                          返回上一级"
+    ],
+    rip:["version 2                     使用 RIPv2","network <网段>                宣告网段","quit"],
+    ospf:["router id <IP>                设置 Router ID","area <区域号>                 进入区域视图","quit"],
+    area:["network <网段> <反掩码>       在区域内宣告网段","quit"]
+  },
+  en:{
+    user:["system-view            enter system view"],
+    system:[
+      "interface <port>       enter interface view, e.g. interface g0/0/2",
+      "rip <id>               enter RIP view",
+      "ospf <id>              enter OSPF view",
+      "vlan batch <id>        create VLANs",
+      "ip route-static ...    configure a static route",
+      "quit                   up one level"
+    ],
+    if:[
+      "ip address <ip> <mask>         set interface address",
+      "dot1q termination vid <vlan>   bind 802.1Q on a sub-interface",
+      "arp broadcast enable           allow ARP on the sub-interface",
+      "port link-type access|trunk    set port type",
+      "port default vlan <vlan>       assign the port to a VLAN",
+      "quit                           up one level"
+    ],
+    rip:["version 2                     use RIPv2","network <net>                 advertise a network","quit"],
+    ospf:["router id <ip>                set Router ID","area <id>                     enter area view","quit"],
+    area:["network <net> <wildcard>      advertise inside the area","quit"]
+  }
+};
+
+/* =========================================================
+   引擎
+   ========================================================= */
+const $ = id => document.getElementById(id);
+const LANG_KEY = "network_er_lang";
+const ROUND = 5, DIAG_N = 3, CLI_N = 2, TIME = 25;
+const DIAG_POOL = CASES.filter(c => c.mode !== "cli");
+const CLI_POOL = CASES.filter(c => c.mode === "cli");
+
+let lang = localStorage.getItem(LANG_KEY) || "zh";
+let phase = "start";
+let S = null;
+let timerId = null;
+let evTimer = null;
+let scoreTimer = null;
+
+function t(k){ return UI[lang][k]; }
+function tx(o){ return o ? (o[lang] || o.zh) : ""; }
+function esc(s){
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+function shuffle(a){
+  a = a.slice();
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function current(){ return S.queue[S.i]; }
+
+/* 接口名归一化：GigabitEthernet0/0/2 / g0/0/2 / ge0/0/2 → 0/0/2 */
+function canonIf(name){
+  let x = String(name || "").toLowerCase().replace(/\s+/g,"");
+  x = x.replace(/^gigabitethernet/, "").replace(/^ethernet/, "").replace(/^ge/, "").replace(/^g/, "");
+  return x;
+}
+
+/* ---------------- 文案刷新 ---------------- */
+function applyStatic(){
+  const u = UI[lang];
+  $("lang").textContent = lang === "zh" ? "EN" : "中文";
+  $("t-title").textContent = u.title;
+  $("t-sub").textContent = u.sub;
+  $("t-score").textContent = u.score;
+  $("t-combo").textContent = u.combo;
+  $("t-case").textContent = u.case;
+  $("t-legend").textContent = u.legend;
+  $("t-pan").textContent = u.pan;
+  $("t-start-title").textContent = u.startTitle;
+  $("t-start-lead").textContent = u.startLead;
+  ["r1","r2","r3","r4"].forEach((k,i) => { $("t-" + k).textContent = u.rules[i]; });
+  $("btn-start").textContent = u.start;
+  $("t-res-title").textContent = u.resTitle;
+  $("v-finalmax").textContent = u.maxUnit;
+  $("t-res-acc").textContent = u.acc;
+  $("t-res-right").textContent = u.right;
+  $("t-res-best").textContent = u.best;
+  $("t-res-avg").textContent = u.avg;
+  $("t-th-ticket").textContent = u.thTicket;
+  $("t-th-verdict").textContent = u.thVerdict;
+  $("t-th-time").textContent = u.thTime;
+  $("t-th-score").textContent = u.thScore;
+  $("btn-again").textContent = u.again;
+  $("t-goal").textContent = u.goalLabel;
+  $("t-syntax").textContent = u.syntaxLabel;
+  $("v-send").textContent = u.send;
+  $("v-input").placeholder = u.cmdPlaceholder;
+  if(phase === "start") $("t-keys").innerHTML = u.keys;
+}
+
+/* ---------------- 开局 ---------------- */
+function startGame(){
+  const picked = shuffle(DIAG_POOL).slice(0, DIAG_N).concat(shuffle(CLI_POOL).slice(0, CLI_N));
+  S = {
+    queue: picked, i: 0, score: 0, combo: 0, best: 0, right: 0,
+    answered: false, chosen: -1, left: TIME, limit: TIME,
+    records: [], wrong: [], opts: [], fb: null,
+    evPres: [], stack: null, flags: null, term: []
+  };
+  phase = "play";
+  $("ov-start").classList.remove("on");
+  $("ov-result").classList.remove("on");
+  clearInterval(scoreTimer);
+  loadCase();
+}
+
+function loadCase(focus){
+  const c = current();
+  const isCli = c.mode === "cli";
+  S.limit = isCli ? (c.limit || 120) : TIME;
+  S.left = S.limit;
+  S.answered = false;
+  S.chosen = -1;
+  S.fb = null;
+  S.opts = isCli ? [] : shuffle(c.options.map((o, idx) => ({ text:o, right: idx === c.answer })));
+  if(isCli){
+    S.stack = [{ type:"user" }];
+    S.flags = {};
+    S.term = [
+      { t:"out", text:"// " + c.meta.id + " · " + c.device },
+      { t:"out", text:"// " + UI[lang].goalLabel + ": " + tx(c.goal) },
+      { t:"out", text:"// " + UI[lang].cmdPlaceholder }
+    ];
+  } else {
+    S.stack = null; S.flags = null; S.term = [];
+  }
+  renderCase();
+  if(focus) focusTicket();
+  buildEvidence(c, false);
+  startTimer();
+  if(isCli) setTimeout(() => { const i = $("v-input"); if(i && !S.answered) i.focus(); }, 60);
+}
+
+/* ---------------- 渲染 ---------------- */
+function renderCase(){
+  const c = current();
+  const u = UI[lang];
+  const isCli = c.mode === "cli";
+  const m = c.meta;
+
+  $("v-score").textContent = S.score;
+  $("v-combo").textContent = S.combo;
+  $("v-case").textContent = (S.i + 1) + "/" + ROUND;
+  $("t-live").textContent = isCli ? u.liveCli : u.liveDiag;
+
+  $("v-bars").innerHTML = Array.from({length: ROUND}, (_, i) => {
+    let cls = "";
+    if(S.records[i]) cls = S.records[i].ok ? "ok" : "no";
+    else if(i === S.i) cls = "on";
+    return "<i class='" + cls + "'></i>";
+  }).join("");
+
+  $("scene-wan").classList.toggle("on", c.scene === "wan");
+  $("scene-vlan").classList.toggle("on", c.scene === "vlan");
+  document.querySelectorAll(".node").forEach(n => n.classList.remove("alert"));
+  (c.watch || []).forEach(id => { const el = $(id); if(el) el.classList.add("alert"); });
+  centerStage(c);
+
+  $("v-pri").textContent = m.priority;
+  $("v-pri").className = "prio " + m.priority.toLowerCase();
+  $("v-id").textContent = m.id;
+  $("v-site").textContent = tx(m.site);
+  $("v-meta2").textContent = u.reporter + " " + tx(m.reporter) + " · " + tx(m.time) + " · " + u.impact + " " + tx(m.affected);
+  $("v-tag").textContent = tx(c.tag);
+  $("v-title").textContent = tx(c.title);
+
+  $("v-note").innerHTML = "<b>" + esc(u.noteLabel) + "</b>" + esc(tx(c.note));
+  $("v-note").style.display = "";
+
+  $("v-cli").style.display = isCli ? "" : "none";
+  $("v-opts").style.display = isCli ? "none" : "";
+  if(isCli){
+    $("v-goal").textContent = tx(c.goal);
+    $("v-syntax").textContent = tx(c.syntax);
+    $("v-termhead").textContent = c.device + " · console";
+    $("v-input").disabled = !!S.answered;
+    $("v-send").disabled = !!S.answered;
+    updatePrompt();
+    renderTerm();
+  }
+
+  buildOptions(c, isCli);
+  $("t-keys").innerHTML = isCli ? u.keysCli : u.keys;
+  $("next").style.display = S.answered ? "" : "none";
+  $("next").textContent = S.i === ROUND - 1 ? u.report : u.next;
+
+  paintFeedback();
+  paintTimer();
+}
+
+function buildOptions(c, isCli){
+  const box = $("v-opts");
+  box.innerHTML = "";
+  if(isCli) return;
+  S.opts.forEach((op, i) => {
+    const b = document.createElement("button");
+    let cls = "opt";
+    if(S.answered){
+      cls += " dis";
+      if(op.right) cls += " ok";
+      else if(i === S.chosen) cls += " bad";
+    }
+    b.className = cls;
+    b.innerHTML = "<b>" + "ABCD"[i] + "</b><span>" + esc(tx(op.text)) + "</span>";
+    if(!S.answered) b.onclick = () => answer(i);
+    box.appendChild(b);
+  });
+}
+
+/* 窄屏时把受影响的两端滚到可视区中间 */
+function centerStage(c){
+  const sb = document.querySelector(".stagebody");
+  if(!sb || sb.scrollWidth <= sb.clientWidth + 2) return;
+  requestAnimationFrame(() => {
+    const svg = $("topo");
+    const sc = svg.getBoundingClientRect().width / 900 || 1;
+    let cx = 450, n = 0, sum = 0;
+    (c.watch || []).forEach(id => {
+      const g = document.getElementById(id);
+      const r = g && g.querySelector("rect");
+      if(r){ sum += (+r.getAttribute("x")) + (+r.getAttribute("width")) / 2; n++; }
+    });
+    if(n) cx = sum / n;
+    sb.scrollLeft = Math.max(0, cx * sc - sb.clientWidth / 2);
+  });
+}
+
+/* 反馈出现后滚到可视位置 */
+function revealFeedback(){
+  const fb = document.querySelector("#v-fb .fb");
+  if(!fb || typeof fb.scrollIntoView !== "function") return;
+  setTimeout(() => {
+    try { fb.scrollIntoView({ behavior:"smooth", block:"nearest" }); }
+    catch(e) { try { fb.scrollIntoView(); } catch(e2) {} }
+  }, 90);
+}
+
+/* 换单后把工单卡带回视野 */
+function focusTicket(){
+  const p = document.querySelector(".panel");
+  if(!p) return;
+  if(window.innerWidth <= 980){
+    const y = p.getBoundingClientRect().top + (window.pageYOffset || 0) - 10;
+    try { window.scrollTo({ top:y, behavior:"smooth" }); }
+    catch(e) { window.scrollTo(0, y); }
+  } else {
+    p.scrollTop = 0;
+  }
+}
+
+/* ---------------- 证据逐行显示 ---------------- */
+function buildEvidence(c, instant){
+  clearTimeout(evTimer);
+  const box = $("v-evs");
+  box.innerHTML = "";
+  S.evPres = [];
+  (c.evidence || []).forEach(b => {
+    const d = document.createElement("div");
+    d.className = "ev";
+    const src = document.createElement("div");
+    src.className = "evsrc";
+    src.textContent = b.src;
+    const pre = document.createElement("pre");
+    d.appendChild(src);
+    d.appendChild(pre);
+    box.appendChild(d);
+    S.evPres.push(pre);
+  });
+  if(instant){ fillEvidence(c); return; }
+  let bi = 0, li = 0;
+  const tick = () => {
+    if(bi >= c.evidence.length) return;
+    const b = c.evidence[bi];
+    li++;
+    S.evPres[bi].textContent = b.lines.slice(0, li).join("\n");
+    if(li >= b.lines.length){
+      bi++; li = 0;
+      evTimer = setTimeout(tick, 170);
+    } else {
+      evTimer = setTimeout(tick, b.lines[li - 1] === "" ? 45 : 34);
+    }
+  };
+  evTimer = setTimeout(tick, 110);
+}
+
+function fillEvidence(c){
+  (c.evidence || []).forEach((b, bi) => {
+    if(S.evPres[bi]) S.evPres[bi].textContent = b.lines.join("\n");
+  });
+}
+
+function flushEvidence(){
+  clearTimeout(evTimer);
+  fillEvidence(current());
+}
+
+/* ---------------- 计时 ---------------- */
+function startTimer(){
+  clearInterval(timerId);
+  timerId = setInterval(() => {
+    S.left = Math.max(0, S.left - 0.1);
+    paintTimer();
+    if(S.left <= 0){
+      clearInterval(timerId);
+      if(current().mode === "cli") resolveCli(false);
+      else answer(-1);
+    }
+  }, 100);
+}
+
+function paintTimer(){
+  if(!S) return;
+  const pct = Math.max(0, S.left / S.limit * 100);
+  $("barfill").style.width = pct + "%";
+  $("bar").classList.toggle("warn", S.left <= 8);
+  $("v-time").textContent = Math.ceil(S.left) + (lang === "zh" ? "s" : "s");
+}
+
+/* ---------------- 计分 ---------------- */
+function speedGain(){ return Math.round(S.left / S.limit * 30); }
+function comboGain(){ return S.combo >= 3 ? 10 : (S.combo >= 2 ? 5 : 0); }
+
+/* ---------------- 诊断作答 ---------------- */
+function answer(pick){
+  if(!S || S.answered) return;
+  const c = current();
+  if(c.mode === "cli") return;
+  clearInterval(timerId);
+  flushEvidence();
+
+  const rightIdx = S.opts.findIndex(o => o.right);
+  const ok = pick === rightIdx;
+  const used = Math.max(0.1, Math.round((S.limit - S.left) * 10) / 10);
+  let gain = 0;
+
+  if(ok){
+    S.right++; S.combo++; S.best = Math.max(S.best, S.combo);
+    gain = 60 + speedGain() + comboGain();
+    S.score += gain;
+  } else {
+    S.combo = 0;
+    S.wrong.push({ c: c, right: tx(S.opts[rightIdx].text) });
+  }
+  S.records.push({ id: c.meta.id, ok: ok, used: used, gain: gain });
+  S.answered = true;
+  S.chosen = pick;
+  S.fb = {
+    ok: ok,
+    head: ok ? UI[lang].ok : (pick === -1 ? UI[lang].timeout : UI[lang].bad),
+    rightText: ok ? "" : UI[lang].correctIs + tx(S.opts[rightIdx].text),
+    why: tx(c.why),
+    fix: c.fix,
+    used: used,
+    gain: gain
+  };
+  renderCase();
+  revealFeedback();
+}
+
+/* ---------------- 迷你 VRP 终端 ---------------- */
+function viewNow(){ return S.stack[S.stack.length - 1]; }
+
+function promptText(){
+  const n = current().device || "Huawei";
+  const v = viewNow();
+  if(!v || v.type === "user") return "<" + n + ">";
+  if(v.type === "system") return "[" + n + "]";
+  if(v.type === "if") return "[" + n + "-" + v.name + "]";
+  if(v.type === "rip") return "[" + n + "-rip-" + v.id + "]";
+  if(v.type === "ospf") return "[" + n + "-ospf-" + v.id + "]";
+  if(v.type === "area") return "[" + n + "-ospf-" + v.ospf + "-area-" + v.id + "]";
+  return "[" + n + "]";
+}
+
+function updatePrompt(){
+  if(!S || !S.stack) return;
+  $("v-prompt").textContent = promptText();
+}
+
+function renderTerm(){
+  if(!S.term) return;
+  const box = $("v-termout");
+  box.innerHTML = S.term.map(l => {
+    let cls = "";
+    if(l.t === "cmd") cls = "cl";
+    else if(l.t === "err") cls = "er";
+    else if(l.t === "ok") cls = "ok";
+    return "<div class='" + cls + "'>" + esc(l.text) + "</div>";
+  }).join("");
+  box.scrollTop = box.scrollHeight;
+}
+
+function pushOut(text){ S.term.push({ t:"out", text:text }); }
+
+function exec(rawCmd){
+  if(!S || S.answered || !S.stack) return;
+  const cmd = rawCmd.replace(/\s+/g, " ").trim();
+  if(!cmd) return;
+  const low = cmd.toLowerCase();
+  S.term.push({ t:"cmd", text: promptText() + " " + cmd });
+
+  if(low === "?" || low === "help" || low === "？"){
+    (HELP[lang][viewNow().type] || HELP[lang].system).forEach(pushOut);
+  } else {
+    const view = viewNow();
+    const res = applyCmd(low, view);
+    if(res.error) S.term.push({ t:"err", text: res.error });
+    else {
+      if(res.out) res.out.forEach(pushOut);
+      evalChecks(low, view);
+    }
+  }
+  S.term = S.term.slice(-120);
+  renderTerm();
+  updatePrompt();
+
+  const c = current();
+  if(c.checks && c.checks.every((ck, i) => S.flags[i])) resolveCli(true);
+}
+
+function applyCmd(low, view){
+  const unknown = { error: "Error: Unrecognized command found at '^' position." };
+
+  if(low === "quit" || low === "q" || low === "return"){
+    if(S.stack.length > 1) S.stack.pop();
+    return { out: [] };
+  }
+
+  if(view.type === "user"){
+    if(low === "system-view" || low === "sys"){
+      S.stack.push({ type:"system" });
+      return { out: ["Enter system view, return user view with Ctrl+Z."] };
+    }
+    return unknown;
+  }
+
+  if(view.type === "system"){
+    if(low === "system-view") return { out: [] };
+    let m = low.match(/^(?:interface|int)\s+(\S+)$/);
+    if(m){
+      S.stack.push({ type:"if", name:"GigabitEthernet" + canonIf(m[1]) });
+      return { out: [] };
+    }
+    m = low.match(/^rip\s+(\d+)$/);
+    if(m){ S.stack.push({ type:"rip", id:m[1] }); return { out: [] }; }
+    m = low.match(/^ospf\s+(\d+)$/);
+    if(m){ S.stack.push({ type:"ospf", id:m[1] }); return { out: [] }; }
+    if(/^vlan(\s+batch)?\s+[\d\s]+$/.test(low)) return { out: [] };
+    if(/^ip route-static\s+\S+.*$/.test(low)) return { out: [] };
+    return unknown;
+  }
+
+  if(view.type === "if"){
+    if(/^ip address\s+\S+\s+\S+$/.test(low)) return { out: [] };
+    if(/^dot1q termination vid\s+\d+$/.test(low)) return { out: [] };
+    if(low === "arp broadcast enable") return { out: [] };
+    if(/^port link-type\s+(access|trunk)$/.test(low)) return { out: [] };
+    if(/^port default vlan\s+\d+$/.test(low)) return { out: [] };
+    if(/^(undo\s+)?shutdown$/.test(low)) return { out: [] };
+    return unknown;
+  }
+
+  if(view.type === "rip"){
+    if(/^version\s+[12]$/.test(low)) return { out: [] };
+    if(/^network\s+\S+(\s+\S+)?$/.test(low)) return { out: [] };
+    return unknown;
+  }
+
+  if(view.type === "ospf"){
+    if(/^router id\s+\S+$/.test(low)) return { out: [] };
+    const m = low.match(/^area\s+(\S+)$/);
+    if(m){
+      let id = m[1];
+      if(id === "0") id = "0.0.0.0";
+      else if(id.indexOf(".") < 0) id = "0.0.0." + id;
+      S.stack.push({ type:"area", id:id, ospf:view.id });
+      return { out: [] };
+    }
+    if(/^network\s+.+\s+area\s+\S+$/.test(low)) return { out: [] };
+    return unknown;
+  }
+
+  if(view.type === "area"){
+    if(/^network\s+\S+\s+\S+$/.test(low)) return { out: [] };
+    return unknown;
+  }
+
+  return unknown;
+}
+
+function evalChecks(low, view){
+  const c = current();
+  (c.checks || []).forEach((ck, i) => {
+    if(S.flags[i]) return;
+    if(ck.view !== view.type) return;
+    if(ck.name && canonIf(ck.name) !== canonIf(view.name)) return;
+    if(ck.id && String(ck.id) !== String(view.id)) return;
+    if(new RegExp(ck.re, "i").test(low)) S.flags[i] = true;
+  });
+}
+
+function resolveCli(ok){
+  if(!S || S.answered) return;
+  clearInterval(timerId);
+  const c = current();
+  const u = UI[lang];
+  const used = Math.max(0.1, Math.round((S.limit - Math.max(0, S.left)) * 10) / 10);
+  let gain = 0;
+
+  if(ok){
+    S.right++; S.combo++; S.best = Math.max(S.best, S.combo);
+    gain = 60 + speedGain() + comboGain();
+    S.score += gain;
+    S.term.push({ t:"ok", text: u.cliDone });
+  } else {
+    S.combo = 0;
+    S.term.push({ t:"err", text: u.timeout });
+    S.wrong.push({ c: c, right: u.required + ": " + c.solution.join(" → ") });
+  }
+  S.records.push({ id: c.meta.id, ok: ok, used: used, gain: gain });
+  S.answered = true;
+  S.fb = {
+    ok: ok,
+    head: ok ? u.cliDone : u.timeout,
+    rightText: "",
+    why: tx(c.why),
+    fix: c.solution.join("\n"),
+    used: used,
+    gain: gain
+  };
+  renderCase();
+  renderTerm();
+  revealFeedback();
+}
+
+/* ---------------- 反馈 ---------------- */
+function paintFeedback(){
+  const box = $("v-fb");
+  box.innerHTML = "";
+  if(!S || !S.fb) return;
+  const fb = S.fb;
+  const gainTxt = fb.gain ? "+" + fb.gain : "+0";
+  box.innerHTML =
+    "<div class='fb " + (fb.ok ? "ok" : "bad") + "'>" +
+      "<div class='fbh'>" + esc(fb.head) + (fb.rightText ? " · " + esc(fb.rightText) : "") + "</div>" +
+      "<div class='fbmeta'><span>" + esc(UI[lang].thTime) + " " + fb.used + "s</span><span><i>" + gainTxt + "</i></span></div>" +
+      "<p>" + esc(fb.why) + "</p>" +
+      "<div class='fix'><span>" + esc(UI[lang].fix) + "</span><code>" + esc(fb.fix) + "</code></div>" +
+    "</div>";
+}
+
+/* ---------------- 下一张 / 结果 ---------------- */
+function nextCase(){
+  if(!S || !S.answered) return;
+  if(S.i < ROUND - 1){
+    S.i++;
+    loadCase(true);
+  } else {
+    showResult(false);
+  }
+}
+
+function showResult(instant){
+  phase = "result";
+  clearInterval(timerId);
+  const u = UI[lang];
+  const max = ROUND * 100;
+  const pct = S.score / max;
+  const rankIdx = pct >= 0.85 ? 3 : pct >= 0.65 ? 2 : pct >= 0.4 ? 1 : 0;
+  const acc = Math.round(S.right / ROUND * 100);
+  const totalUsed = S.records.reduce((s, r) => s + r.used, 0);
+  const avg = S.records.length ? Math.round(totalUsed / S.records.length) : 0;
+
+  $("v-final").textContent = instant ? S.score : 0;
+  $("v-rank").textContent = u.ranks[rankIdx];
+  $("v-acc").textContent = acc + "%";
+  $("v-right").textContent = S.right + "/" + ROUND;
+  $("v-best").textContent = S.best;
+  $("v-avg").textContent = avg + "s";
+
+  $("v-ho").innerHTML = S.records.map(r => {
+    const okv = r.ok ? "<span class='okv'>" + esc(u.verdictOk) + "</span>"
+                     : "<span class='nov'>" + esc(u.verdictNo) + "</span>";
+    return "<tr><td>" + esc(r.id) + "</td><td class='v'>" + okv + "</td>" +
+           "<td>" + r.used + "s</td><td class='sc'>" + (r.gain ? "+" + r.gain : "0") + "</td></tr>";
+  }).join("");
+
+  if(S.wrong.length === 0){
+    $("v-review").innerHTML = "<div class='rv'><b>" + esc(u.perfect) + "</b><span>" + esc(u.perfectSub) + "</span></div>";
+  } else {
+    $("v-review").innerHTML = S.wrong.map(w =>
+      "<div class='rv'><b>" + esc(tx(w.c.title)) + "</b>" +
+      "<span>" + esc(w.right) + "</span>" +
+      "<em>" + esc(w.c.fix.split("\n")[0]) + "</em></div>"
+    ).join("");
+  }
+
+  $("ov-result").classList.add("on");
+
+  if(!instant){
+    clearInterval(scoreTimer);
+    const target = S.score;
+    let shown = 0;
+    scoreTimer = setInterval(() => {
+      shown += Math.max(1, Math.round(target / 20));
+      if(shown >= target){ shown = target; clearInterval(scoreTimer); scoreTimer = null; }
+      $("v-final").textContent = shown;
+    }, 34);
+  }
+
+  /* 结果页在移动端可能滚动，滚回顶部 */
+  $("ov-result").querySelector(".sheet").scrollTop = 0;
+}
+
+/* ---------------- 语言 ---------------- */
+function setLang(l){
+  lang = l;
+  localStorage.setItem(LANG_KEY, l);
+  applyStatic();
+  if(phase === "play" && S){
+    renderCase();
+    buildEvidence(current(), true);
+  } else if(phase === "result" && S){
+    showResult(true);
+  } else {
+    $("t-keys").innerHTML = UI[lang].keys;
+  }
+}
+
+/* ---------------- 事件 ---------------- */
+$("lang").onclick = () => setLang(lang === "zh" ? "en" : "zh");
+$("restart").onclick = () => {
+  clearInterval(timerId);
+  clearTimeout(evTimer);
+  clearInterval(scoreTimer);
+  phase = "start";
+  $("ov-result").classList.remove("on");
+  $("ov-start").classList.add("on");
+};
+$("btn-start").onclick = startGame;
+$("btn-again").onclick = startGame;
+$("next").onclick = nextCase;
+$("v-send").onclick = () => {
+  const v = $("v-input").value;
+  $("v-input").value = "";
+  exec(v);
+  $("v-input").focus();
+};
+$("v-input").addEventListener("keydown", e => {
+  if(e.key === "Enter"){
+    e.preventDefault();
+    const v = $("v-input").value;
+    $("v-input").value = "";
+    exec(v);
+  }
+});
+
+document.addEventListener("keydown", e => {
+  if(phase !== "play" || !S) return;
+  const inInput = document.activeElement && document.activeElement.id === "v-input";
+  if(e.key === "Enter"){
+    if(inInput) return;
+    if(S.answered){ e.preventDefault(); nextCase(); }
+    return;
+  }
+  if(inInput) return;
+  const c = current();
+  if(!S.answered && c.mode !== "cli" && /^[1-4]$/.test(e.key)){
+    answer(parseInt(e.key, 10) - 1);
+  }
+});
+
+/* ---------------- 初始化 ---------------- */
+applyStatic();
+$("t-keys").innerHTML = UI[lang].keys;
+if(location.search.indexOf("play") >= 0){ startGame(); }
+</script>
+</body>
+</html>
