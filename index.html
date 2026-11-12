@@ -1721,11 +1721,11 @@ function renderQueue(){
   const run = $("v-run"), cf = $("v-confirm");
   const n = S.cmdQueue.length;
   if(run){
-    run.disabled = !!S.answered || !S.orderConfirmed;
-    run.classList.toggle("ready", S.orderConfirmed && !S.answered);
+    run.disabled = !!S.answered || n === 0;
+    run.classList.toggle("ready", n > 0 && !S.answered);
   }
   if(cf){
-    cf.disabled = !!S.answered || !n || S.orderConfirmed;
+    cf.disabled = !!S.answered || n === 0 || S.orderConfirmed;
     cf.textContent = S.orderConfirmed ? "已确认 Confirmed" : "确认排序 Confirm";
     cf.classList.toggle("ok", !!S.orderConfirmed);
   }
@@ -1772,7 +1772,7 @@ function confirmOrder(){
     $("v-buildmsg").className = "buildmsg ok";
   } else {
     S.orderConfirmed = false;
-    $("v-buildmsg").textContent = "顺序还不对，用 ↑↓ 调整 / Not the right order yet. Use ↑↓.";
+    $("v-buildmsg").textContent = "顺序还不对，可直接执行试一下 / Not in order, but you can still run.";
     $("v-buildmsg").className = "buildmsg bad";
   }
   renderQueue();
@@ -1800,8 +1800,8 @@ function moveCmd(p, d){
 }
 function runQueue(){
   if(!S || S.answered) return;
-  if(!S.orderConfirmed){
-    $("v-buildmsg").textContent = "先确认排序，再执行 / Confirm the order first.";
+  if(!S.cmdQueue.length){
+    $("v-buildmsg").textContent = "先拖入命令 / Add commands first.";
     $("v-buildmsg").className = "buildmsg bad";
     return;
   }
