@@ -62,13 +62,13 @@
   function pad(v, n) { return String(v) + Array(Math.max(0, n - String(v).length) + 1).join(" "); }
   function fullIf(port) { return "GigabitEthernet" + String(port).replace(/^G/, ""); }
   function row(net, proto, pre, cost, nh, intf, flag) {
-    return pad(net, 20) + pad(proto, 8) + pad(pre, 5) + pad(cost, 5) + pad(flag === undefined ? "D" : flag, 4) + pad(nh, 16) + intf;
+    return pad(net, 20) + pad(proto, 8) + pad(pre, 5) + pad(cost, 5) + pad(flag === undefined ? "D" : flag, 6) + pad(nh, 16) + intf;
   }
   function cols(vals, widths) {
     return vals.map(function (v, i) { return pad(v, widths[i] || 0); }).join("");
   }
   function routeHead() {
-    return cols(["Destination/Mask", "Proto", "Pre", "Cost", "Flags", "NextHop", "Interface"], [20, 8, 5, 5, 4, 16, 0]);
+    return cols(["Destination/Mask", "Proto", "Pre", "Cost", "Flags", "NextHop", "Interface"], [20, 8, 5, 5, 6, 16, 0]);
   }
 
   /* ============================================================
