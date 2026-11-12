@@ -1,4 +1,4 @@
-(function (global) {
+﻿(function (global) {
   "use strict";
 
   /* ============================================================
@@ -66,6 +66,9 @@
   }
   function cols(vals, widths) {
     return vals.map(function (v, i) { return pad(v, widths[i] || 0); }).join("");
+  }
+  function routeHead() {
+    return cols(["Destination/Mask", "Proto", "Pre", "Cost", "Flags", "NextHop", "Interface"], [20, 8, 5, 5, 4, 16, 0]);
   }
 
   /* ============================================================
@@ -348,7 +351,7 @@
       verify: function (s) {
         var out = [], ports = Object.keys(s.iface.R1 || {});
         out.push(["cmd", "<R1>", "display ip routing-table"]);
-        out.push(["out", "Destination/Mask    Proto   Pre  Cost   Flags  NextHop         Interface"]);
+        out.push(["out", routeHead()]);
         if (!ports.length) out.push(["out", "(路由表为空：还没有为任何接口配置 IP)"]);
         ports.forEach(function (p) {
           var cidr = s.iface.R1[p];
@@ -435,7 +438,7 @@
       verify: function (s) {
         var out = [];
         out.push(["cmd", "<R1>", "display ip routing-table"]);
-        out.push(["out", "Destination/Mask    Proto   Pre  Cost   Flags  NextHop         Interface"]);
+        out.push(["out", routeHead()]);
         out.push(["out", row("192.168.1.0/24", "Direct", 0, 0, "192.168.1.1", "GigabitEthernet0/0/0")]);
         out.push(["out", row("10.0.0.0/24", "Direct", 0, 0, "10.0.0.1", "GigabitEthernet0/0/1")]);
         if (hasStatic(s, "R1", "192.168.2.0", 24, "10.0.0.2")) {
@@ -444,7 +447,7 @@
           out.push(["err", "192.168.2.0/24 缺失 — 需要在 R1 上配置静态路由"]);
         }
         out.push(["cmd", "<R2>", "display ip routing-table"]);
-        out.push(["out", "Destination/Mask    Proto   Pre  Cost   Flags  NextHop         Interface"]);
+        out.push(["out", routeHead()]);
         out.push(["out", row("192.168.2.0/24", "Direct", 0, 0, "192.168.2.1", "GigabitEthernet0/0/1")]);
         if (hasStatic(s, "R2", "192.168.1.0", 24, "10.0.0.1")) {
           out.push(["out", row("192.168.1.0/24", "Static", 60, 0, "10.0.0.1", "GigabitEthernet0/0/0")]);
@@ -538,7 +541,7 @@
           out.push(["err", "缺少邻居或宣告 — 检查三台设备的 rip / version 2 / network"]);
         } else {
           out.push(["out", "Routing Tables: RIP        Routes : 3"]);
-          out.push(["out", "Destination/Mask    Proto   Pre  Cost   Flags  NextHop         Interface"]);
+          out.push(["out", routeHead()]);
           out.push(["out", row("192.168.2.0/24", "RIP", 100, 1, "10.0.12.2", "GigabitEthernet0/0/1")]);
           out.push(["out", row("192.168.3.0/24", "RIP", 100, 2, "10.0.12.2", "GigabitEthernet0/0/1")]);
           out.push(["out", row("10.0.23.0/30", "RIP", 100, 1, "10.0.12.2", "GigabitEthernet0/0/1")]);
@@ -645,7 +648,7 @@
         }
         out.push(["cmd", "<R1>", "display ip routing-table protocol ospf"]);
         if (r1ok && r2ok && r3ok) {
-          out.push(["out", "Destination/Mask    Proto   Pre  Cost   Flags  NextHop         Interface"]);
+          out.push(["out", routeHead()]);
           out.push(["out", row("3.3.3.3/32", "OSPF", 10, 2, "10.0.12.2", "GigabitEthernet0/0/1")]);
           out.push(["out", row("10.0.23.0/30", "OSPF", 10, 1, "10.0.12.2", "GigabitEthernet0/0/1")]);
           out.push(["out", row("192.168.3.0/24", "OSPF", 10, 2, "10.0.12.2", "GigabitEthernet0/0/1")]);
@@ -772,3 +775,4 @@
   global.TASKS = TASKS;
   global.RS_UTIL = { netOf: netOf, ipOnly: ipOnly };
 })(window);
+
