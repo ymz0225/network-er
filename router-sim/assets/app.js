@@ -1,325 +1,983 @@
-:root{
-  --bg:#F2F6FB; --card:#FFFFFF; --ink:#1B2A3C; --body:#3A4C60; --muted:#7B8B9E;
-  --line:#E3EAF2; --line2:#D2DFEC; --blue:#2F6FEB; --blue-dark:#1E56C8; --soft:#EDF3FE;
-  --green:#188A5E; --green-bg:#F0FAF5; --red:#C24B4B; --red-bg:#FFF5F5;
-  --amber:#A8690F; --amber-bg:#FFF9ED; --purple:#7A5AF8;
-  --mono:Consolas,"Cascadia Mono",Menlo,"Courier New",monospace;
-  --shadow:0 1px 2px rgba(17,38,66,.04),0 8px 24px rgba(17,38,66,.05);
-}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-[hidden]{display:none!important}
-html,body{height:100%}
-body{
-  margin:0;background:var(--bg);color:var(--body);overflow:hidden;
-  font-family:"Microsoft YaHei","PingFang SC",system-ui,-apple-system,"Segoe UI",sans-serif;
-  font-size:14px;line-height:1.5;
-}
-button{font-family:inherit}
-h1,h2,p{margin:0}
-.app{height:100dvh;display:flex;flex-direction:column;min-height:0}
+﻿(function () {
+  "use strict";
 
-/* ---------- top bar ---------- */
-.topbar{
-  display:flex;align-items:center;gap:16px;padding:10px 20px;background:var(--card);
-  border-bottom:1px solid var(--line);flex:none;
-}
-.brand{display:flex;align-items:center;gap:12px;min-width:0;margin-right:auto}
-.logo{
-  width:40px;height:40px;border-radius:11px;flex:none;display:grid;place-items:center;
-  background:linear-gradient(160deg,#EDF4FF,#DCE8FB);border:1px solid #D3E2F8;color:var(--blue);
-}
-.logo svg{width:22px;height:22px}
-.brandtext{min-width:0}
-.brandtext h1{font-size:19px;color:var(--ink);letter-spacing:.2px;white-space:nowrap;display:flex;align-items:baseline;gap:8px}
-.brandtext h1 span{font-size:12px;color:var(--muted);font-weight:500;letter-spacing:.4px}
-.brandtext p{font-size:11.5px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.topactions{display:flex;align-items:center;gap:9px;flex:none}
-.scorebox{
-  display:flex;align-items:baseline;gap:5px;border:1px solid var(--line);background:#F8FAFD;
-  border-radius:9px;padding:6px 11px;
-}
-.scorebox span{font-size:11px;color:var(--muted)}
-.scorebox b{font-family:var(--mono);font-size:20px;color:var(--blue);line-height:1}
-.scorebox em{font-style:normal;font-size:11px;color:#9AA8B8}
-.ghost{
-  border:1px solid var(--line2);background:#fff;color:#59708A;border-radius:8px;
-  padding:7px 12px;font-size:12.5px;cursor:pointer;transition:.15s;
-}
-.ghost:hover{color:var(--blue);border-color:#A9C6EE;background:#FAFCFF}
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = function (s) {
+    return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    });
+  };
+  var TASKS = window.TASKS;
+  var VW = 1000, VH = 560;
+  var STORE = "gtrs_progress_v1";
 
-/* ---------- rail ---------- */
-.rail{
-  display:flex;align-items:center;gap:0;padding:8px 20px;background:#FAFCFF;
-  border-bottom:1px solid var(--line);overflow-x:auto;flex:none;
-}
-.railbtn{
-  flex:1 1 0;min-width:148px;display:flex;align-items:center;gap:9px;background:none;border:0;
-  padding:4px 8px;cursor:pointer;position:relative;text-align:left;color:var(--muted);
-}
-.railbtn::after{
-  content:"";position:absolute;right:-4px;top:50%;width:10px;height:1px;background:var(--line2);
-}
-.railbtn:last-child::after{display:none}
-.railbtn .n{
-  width:26px;height:26px;border-radius:50%;flex:none;display:grid;place-items:center;
-  border:1px solid var(--line2);background:#fff;font-family:var(--mono);font-size:12px;
-  color:#8496A9;transition:.18s;
-}
-.railbtn .lab{min-width:0}
-.railbtn .lab b{display:block;font-size:12.5px;color:#5C7188;font-weight:600;white-space:nowrap}
-.railbtn .lab i{display:block;font-style:normal;font-size:10px;color:#9AA8B8;white-space:nowrap}
-.railbtn:hover .n{border-color:#A9C6EE;color:var(--blue)}
-.railbtn.on .n{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 0 0 3px rgba(47,111,235,.13)}
-.railbtn.on .lab b{color:var(--blue)}
-.railbtn.done .n{background:var(--green);border-color:var(--green);color:#fff;font-size:0}
-.railbtn.done .n::before{content:"✓";font-family:inherit;font-size:13px}
+  var S = {
+    ti: 0,
+    states: {},
+    queues: {},
+    logs: {},
+    results: {},
+    hint: {},
+    progress: loadProgress(),
+    animating: false
+  };
 
-/* ---------- layout ---------- */
-.workspace{
-  flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1.18fr) minmax(356px,.82fr);
-  gap:13px;padding:13px 18px 16px;
-}
-.stage-col{display:flex;flex-direction:column;gap:12px;min-height:0;min-width:0}
-.panel{display:flex;flex-direction:column;gap:12px;min-height:0;overflow-y:auto;padding-right:3px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);min-width:0}
+  var cv, ctx;
+  var view = { scale: 1, ox: 0, oy: 0, dpr: 1 };
+  var anim = null;
 
-/* ---------- stage ---------- */
-.stagecard{flex:1 1 auto;min-height:250px;display:flex;flex-direction:column;overflow:hidden}
-.cardhead{
-  display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--line);
-  font-size:12px;color:var(--muted);flex:none;min-height:40px;
-}
-.cardhead.slim{padding:8px 13px;min-height:38px}
-.cardhead .dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex:none}
-.ch-zh{color:#4E657D;font-size:12.5px;font-weight:600}
-.ch-en{font-size:10.5px;color:#9AA8B8;letter-spacing:.2px}
-.pingtools{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
-.pingbtn{
-  border:1px solid #CFE0F6;background:#F4F9FF;color:#2766C9;border-radius:7px;
-  font-size:12px;padding:5px 10px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;
-}
-.pingbtn:hover{background:#E9F3FF;border-color:#A9C6EE}
-.pingbtn:disabled{opacity:.5;cursor:default}
-.pingbtn svg{width:11px;height:11px}
-.canvas-wrap{position:relative;flex:1;min-height:0;background-color:#FBFDFF;background-image:radial-gradient(circle at 1px 1px,#E4ECF6 1px,transparent 0);background-size:20px 20px}
-#topo{display:block;width:100%;height:100%}
-.hud{
-  position:absolute;left:14px;bottom:14px;right:14px;max-width:520px;background:#fff;
-  border:1px solid var(--line2);border-left:3px solid var(--blue);border-radius:9px;
-  padding:9px 12px;font-size:12.5px;line-height:1.55;color:#42566D;
-  box-shadow:0 8px 26px rgba(17,38,66,.12);animation:hudin .2s ease-out;
-}
-.hud.bad{border-left-color:var(--red);color:#7C4141;background:#FFFAFA}
-.hud.good{border-left-color:var(--green);color:#2C6B53;background:#FBFEFC}
-@keyframes hudin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  function loadProgress() {
+    try {
+      var raw = localStorage.getItem(STORE);
+      if (!raw) return { done: {} };
+      var p = JSON.parse(raw);
+      return { done: p.done || {} };
+    } catch (e) { return { done: {} }; }
+  }
+  function saveProgress() {
+    try { localStorage.setItem(STORE, JSON.stringify({ done: S.progress.done })); } catch (e) {}
+  }
 
-/* ---------- terminal ---------- */
-.termcard{flex:0 0 182px;display:flex;flex-direction:column;overflow:hidden}
-.termhead{
-  display:flex;align-items:center;gap:6px;padding:7px 12px;border-bottom:1px solid var(--line);
-  background:#F7FAFE;flex:none;
-}
-.tdot{width:8px;height:8px;border-radius:50%;background:#DCE4EE}
-.tdot:nth-child(1){background:#E8B7B7}
-.tdot:nth-child(2){background:#EBD3A8}
-.tdot:nth-child(3){background:#B4DAC8}
-.termtitle{font-size:11px;color:#7C8B9D;font-family:var(--mono);margin-left:5px}
-.termclear{
-  margin-left:auto;border:0;background:none;color:#9AA8B8;font-size:11px;cursor:pointer;padding:2px 4px;
-}
-.termclear:hover{color:var(--blue)}
-.termout{
-  flex:1;min-height:0;overflow-y:auto;padding:8px 12px 10px;background:#FCFDFF;
-  font-family:var(--mono);font-size:12px;line-height:1.62;color:#4A5D72;
-  white-space:pre-wrap;overflow-wrap:anywhere;
-}
-.tl{display:block}
-.tl .pr{color:#8090A4;margin-right:6px}
-.tl .cm{color:#22364D}
-.tl.out{color:#5E7188}
-.tl.err{color:#B94A4A}
-.tl.note{color:#94701F}
-.tl.ok{color:#188A5E}
+  function task() { return TASKS[S.ti]; }
+  function fresh(t) {
+    var s = { iface: {}, stat: {}, def: {}, rip: {}, ospf: {}, vlan: {}, sub: {}, applied: [], pinged: {} };
+    if (t.pre) t.pre(s);
+    return s;
+  }
+  function st() {
+    var t = task();
+    if (!S.states[t.id]) S.states[t.id] = fresh(t);
+    return S.states[t.id];
+  }
+  function queue() {
+    var t = task();
+    if (!S.queues[t.id]) S.queues[t.id] = [];
+    return S.queues[t.id];
+  }
+  function logs() {
+    var t = task();
+    if (!S.logs[t.id]) S.logs[t.id] = [];
+    return S.logs[t.id];
+  }
+  function tileById(id) {
+    var arr = task().bank.filter(function (b) { return b.id === id; });
+    return arr[0];
+  }
+  function doneCount() {
+    return Object.keys(S.progress.done).filter(function (k) { return S.progress.done[k]; }).length;
+  }
+  function nodeById(id) {
+    var arr = task().topo.nodes.filter(function (n) { return n.id === id; });
+    return arr[0];
+  }
 
-/* ---------- task card ---------- */
-.taskcard{padding:14px 16px 15px;flex:none}
-.tasktop{display:flex;align-items:center;gap:8px;margin-bottom:6px}
-.taskno{font-family:var(--mono);font-size:11px;color:var(--blue);background:var(--soft);border:1px solid #D8E6FB;border-radius:5px;padding:2px 6px}
-.tasktag{font-size:10.5px;color:#8B9CAE;letter-spacing:.2px}
-.reset-task{margin-left:auto}
-.linkbtn{border:0;background:none;color:#93A4B6;font-size:11px;cursor:pointer;padding:2px;text-decoration:underline;text-underline-offset:2px}
-.linkbtn:hover{color:var(--blue)}
-.taskcard h2{font-size:20px;color:var(--ink);letter-spacing:.2px;line-height:1.35}
-.ten{font-size:11.5px;color:var(--muted);margin-top:1px}
-.tintro{margin-top:8px;font-size:12.8px;line-height:1.62;color:var(--body)}
-.tintro .en{display:block;font-size:11px;color:var(--muted);margin-top:3px;line-height:1.55}
-.steps{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
-.step{
-  display:flex;align-items:center;gap:5px;font-size:11px;line-height:1.3;color:#6B7E92;
-  border:1px solid var(--line);border-radius:6px;padding:3px 7px 3px 4px;background:#FAFCFF;
-  max-width:100%;
-}
-.step .sn{
-  width:15px;height:15px;border-radius:50%;flex:none;display:grid;place-items:center;
-  border:1px solid var(--line2);font-family:var(--mono);font-size:9px;color:#93A4B6;background:#fff;
-}
-.step .sx{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:132px}
-.step .sen{display:none}
-.step .sc{font-family:var(--mono);font-size:9px;color:#A3B1C1;flex:none}
-.step.done{color:#4C7E68;border-color:#D8EADF;background:#F7FBF9}
-.step.done .sn{background:var(--green);border-color:var(--green);color:#fff;font-size:0}
-.step.done .sn::before{content:"✓";font-size:10px}
-.step.done .sc{color:var(--green)}
+  /* ============================================================
+     终端 / Terminal
+     ============================================================ */
+  function termEl() { return $("term"); }
+  function appendTerm(entry) {
+    var box = termEl();
+    var d = document.createElement("div");
+    d.className = "tl " + entry[0];
+    if (entry[0] === "cmd") {
+      d.innerHTML = '<span class="pr">' + esc(entry[1]) + "</span> <span class=\"cm\">" + esc(entry[2]) + "</span>";
+    } else {
+      d.textContent = entry[1];
+    }
+    box.appendChild(d);
+    box.scrollTop = box.scrollHeight;
+  }
+  function log(type, a, b) {
+    var entry = [type, a, b];
+    logs().push(entry);
+    appendTerm(entry);
+  }
+  function renderTerm() {
+    var box = termEl();
+    box.innerHTML = "";
+    logs().forEach(function (entry) {
+      var d = document.createElement("div");
+      d.className = "tl " + entry[0];
+      if (entry[0] === "cmd") {
+        d.innerHTML = '<span class="pr">' + esc(entry[1]) + "</span> <span class=\"cm\">" + esc(entry[2]) + "</span>";
+      } else {
+        d.textContent = entry[1];
+      }
+      box.appendChild(d);
+    });
+    box.scrollTop = box.scrollHeight;
+  }
+  function welcome(t) {
+    if (logs().length) return;
+    log("out", "// 任务 " + t.no + " · " + t.zh + " / " + t.en);
+    log("out", "// 从命令库选择命令加入队列，点击「执行」下发到设备。");
+  }
 
-/* ---------- bank ---------- */
-.buildcard{display:flex;flex-direction:column;flex:none;overflow:hidden}
-.bankhint{margin-left:auto;font-size:10.5px;color:#A9B6C5}
-.bank{padding:6px 10px 8px;max-height:190px;overflow-y:auto}
-.devgroup+.devgroup{margin-top:8px}
-.devhead{display:flex;align-items:center;gap:6px;margin:2px 0 5px;font-size:10.5px;color:#93A4B6}
-.devchip{
-  font-family:var(--mono);font-size:10px;font-weight:700;border-radius:4px;padding:1px 5px;letter-spacing:.3px;
-  border:1px solid;flex:none;
-}
-.devchip.r1{color:#2766C9;border-color:#C9DCF7;background:#F1F7FF}
-.devchip.r2{color:#7A4FBD;border-color:#DCCDF3;background:#F8F3FF}
-.devchip.r3{color:#0F7B7B;border-color:#C6E5E5;background:#F2FBFB}
-.devchip.sw{color:#8A6414;border-color:#EAD9B6;background:#FFFAF0}
-.devcnt{margin-left:auto;font-family:var(--mono);color:#B2BFCD}
-.tiles{display:flex;flex-direction:column;gap:4px}
-.tile{
-  display:flex;align-items:center;gap:7px;width:100%;text-align:left;cursor:pointer;
-  border:1px solid var(--line);background:#fff;border-radius:7px;padding:6px 8px;transition:.14s;
-}
-.tile:hover:not(.done){border-color:#B7D0F2;background:#FAFCFF;transform:translateX(1px)}
-.tile.done{background:#F6FAF8;border-color:#D8EADF;cursor:default}
-.tile .s{
-  flex:none;width:16px;height:16px;border-radius:4px;background:#F0F5FB;color:#8B9CAE;
-  font-family:var(--mono);font-size:9px;display:grid;place-items:center;
-}
-.tile .tx{font-family:var(--mono);font-size:11.5px;color:#33475B;line-height:1.4;min-width:0;word-break:break-word}
-.tile.done .tx{color:#8AA597;text-decoration:line-through}
-.tile .port{flex:none;margin-left:auto;font-family:var(--mono);font-size:9.5px;color:#9AA8B8;white-space:nowrap}
-.tile.done .s{background:var(--green);color:#fff}
+  /* ============================================================
+     顶部导航 / Rail
+     ============================================================ */
+  function renderRail() {
+    var host = $("rail");
+    host.innerHTML = "";
+    TASKS.forEach(function (t, i) {
+      var b = document.createElement("button");
+      b.className = "railbtn" + (i === S.ti ? " on" : "") + (S.progress.done[t.id] ? " done" : "");
+      b.setAttribute("data-i", i);
+      b.innerHTML = '<span class="n">' + t.no + '</span><span class="lab"><b>' + esc(t.zh) + "</b><i>" + esc(t.en) + "</i></span>";
+      b.addEventListener("click", function () {
+        if (S.animating || i === S.ti) return;
+        S.ti = i;
+        $("hud").hidden = true;
+        document.querySelector(".panel").scrollTop = 0;
+        renderAll();
+        welcome(task());
+        renderTerm();
+      });
+      host.appendChild(b);
+    });
+    $("score").textContent = String(doneCount() * 20);
+  }
 
-/* ---------- queue ---------- */
-.qhead{
-  display:flex;align-items:center;justify-content:space-between;padding:7px 13px 5px;
-  border-top:1px solid var(--line);font-size:11.5px;color:#6B7E92;
-}
-.qhead i{font-style:normal;font-family:var(--mono);font-size:10px;color:#9AA8B8;margin-left:3px}
-.queue{padding:2px 10px 6px;max-height:172px;overflow-y:auto;min-height:44px}
-.queue.drop{background:#F4F9FF;outline:1px dashed #A9C6EE;outline-offset:-3px;border-radius:6px}
-.queue .empty{font-size:11.5px;color:#A9B6C5;text-align:center;padding:10px 0}
-.qrow{
-  display:flex;align-items:center;gap:6px;padding:5px 7px;border:1px solid var(--line);
-  background:#FBFCFE;border-radius:6px;margin-bottom:4px;animation:qin .16s ease-out;
-}
-@keyframes qin{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
-.qrow .qn{font-family:var(--mono);font-size:9.5px;color:#A3B1C1;width:13px;flex:none}
-.qrow .qdev{font-family:var(--mono);font-size:9px;font-weight:700;border-radius:3px;padding:1px 4px;border:1px solid;flex:none}
-.qrow .qtx{font-family:var(--mono);font-size:11px;color:#3B4F64;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
-.qrow .qa{display:flex;gap:1px;flex:none}
-.qrow .qa button{
-  border:1px solid transparent;background:none;color:#A3B1C1;font-size:11px;cursor:pointer;
-  width:19px;height:19px;border-radius:4px;line-height:1;padding:0;
-}
-.qrow .qa button:hover{background:#EDF4FE;color:var(--blue);border-color:#D6E4F8}
-.qrow .qa button.del:hover{background:#FFF1F1;color:var(--red);border-color:#F0D5D5}
-.actions{display:flex;gap:7px;padding:6px 13px 8px}
-.actions button{
-  border-radius:8px;padding:8px 12px;font-size:12.5px;cursor:pointer;border:1px solid;transition:.15s;flex:1;
-}
-.primary{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600}
-.primary:hover:not(:disabled){background:var(--blue-dark)}
-.primary:disabled{background:#CFDCEA;border-color:#CFDCEA;color:#fff;cursor:default}
-.verify{background:#fff;border-color:#BBD3F1;color:#2766C9}
-.verify:hover{background:#F4F9FF}
-.actions .ghost{flex:0 0 72px}
-.msg{padding:0 13px 9px;font-size:11.5px;line-height:1.5;color:#8B9CAE;min-height:22px}
-.msg.ok{color:var(--green)}
-.msg.bad{color:var(--red)}
-.msg.warn{color:var(--amber)}
+  /* ============================================================
+     任务卡 / Task card
+     ============================================================ */
+  function renderTaskCard() {
+    var t = task();
+    $("taskno").textContent = "任务 " + (t.no < 10 ? "0" + t.no : t.no);
+    $("tasktag").textContent = t.tag;
+    $("tasktitle").textContent = t.zh;
+    $("tasken").textContent = t.en;
+    $("taskintro").innerHTML = esc(t.intro) + '<span class="en">' + esc(t.introEn) + "</span>";
+    renderSteps();
+  }
+  function renderSteps() {
+    var t = task(), s = st();
+    var host = $("steps");
+    host.innerHTML = "";
+    t.steps.forEach(function (step, i) {
+      var no = i + 1;
+      var tiles = t.bank.filter(function (b) { return b.step === no; });
+      var done = 0;
+      tiles.forEach(function (b) { if (s.applied.indexOf(b.id) >= 0) done++; });
+      var isDone = tiles.length ? done === tiles.length : !!s.pinged[t.id];
+      var d = document.createElement("div");
+      d.className = "step" + (isDone ? " done" : "");
+      d.title = step.zh + " / " + step.en;
+      d.innerHTML = '<span class="sn">' + (isDone ? "✓" : no) + '</span><span class="sx">' + esc(step.zh) +
+        '</span><span class="sc">' + (tiles.length ? done + "/" + tiles.length : (isDone ? "完成" : "待测试")) + "</span>";
+      host.appendChild(d);
+    });
+  }
 
-/* ---------- report ---------- */
-.reportcard{flex:none;overflow:hidden}
-.rcount{margin-left:auto;font-family:var(--mono);font-size:10.5px;color:#9AA8B8}
-.report{padding:6px 11px 9px}
-.rrow{display:flex;align-items:flex-start;gap:7px;padding:5px 3px;border-bottom:1px dashed #EDF1F6}
-.rrow:last-child{border-bottom:0}
-.rnum{
-  width:15px;height:15px;border-radius:50%;flex:none;margin-top:1px;display:grid;place-items:center;
-  background:#F1F5FA;color:#A3B1C1;font-family:var(--mono);font-size:8.5px;
-}
-.rtxt{min-width:0;flex:1}
-.rtxt b{display:block;font-size:11.5px;font-weight:500;color:#5E7188;line-height:1.45}
-.rtxt i{display:block;font-style:normal;font-size:10px;color:#A3B1C1;line-height:1.4}
-.rstate{flex:none;font-size:10px;color:#B2BFCD;padding-top:2px;font-family:var(--mono)}
-.rrow.pass .rnum{background:var(--green);color:#fff}
-.rrow.pass .rtxt b{color:#2C6B53}
-.rrow.pass .rstate{color:var(--green)}
-.rrow.fail .rnum{background:var(--red);color:#fff}
-.rrow.fail .rtxt b{color:#9B4444}
-.rrow.fail .rstate{color:var(--red)}
+  /* ============================================================
+     命令库 / Command bank
+     ============================================================ */
+  var DEV_NAME = { R1: "路由器 Router", R2: "路由器 Router", R3: "路由器 Router", SW: "交换机 Switch" };
+  var DEV_CLASS = { R1: "r1", R2: "r2", R3: "r3", SW: "sw" };
+  function renderBank() {
+    var t = task(), s = st();
+    var host = $("bank");
+    host.innerHTML = "";
+    var devs = [];
+    t.bank.forEach(function (b) { if (devs.indexOf(b.dev) < 0) devs.push(b.dev); });
+    devs.forEach(function (dev) {
+      var all = t.bank.filter(function (b) { return b.dev === dev; });
+      var left = all.filter(function (b) { return s.applied.indexOf(b.id) < 0; });
+      var g = document.createElement("div");
+      g.className = "devgroup";
+      var head = document.createElement("div");
+      head.className = "devhead";
+      head.innerHTML = '<span class="devchip ' + DEV_CLASS[dev] + '">' + dev + "</span><span>" + DEV_NAME[dev] +
+        '</span><span class="devcnt">' + (left.length ? left.length + " 条待下发" : "已全部下发") + "</span>";
+      g.appendChild(head);
+      if (!left.length) { host.appendChild(g); return; }
+      var wrap = document.createElement("div");
+      wrap.className = "tiles";
+      left.forEach(function (b) {
+        var el = document.createElement("div");
+        el.className = "tile";
+        el.setAttribute("role", "button");
+        el.setAttribute("tabindex", "0");
+        el.setAttribute("data-id", b.id);
+        el.draggable = true;
+        el.innerHTML = '<span class="s">' + b.step + '</span><span class="tx">' +
+          esc(b.text) + '</span><span class="port">' + esc(b.port || "") + "</span>";
+        el.addEventListener("click", function () {
+          if (S.animating) return;
+          addToQueue(b.id);
+        });
+        el.addEventListener("dragstart", function (e) {
+          e.dataTransfer.setData("text/plain", b.id);
+          e.dataTransfer.effectAllowed = "copy";
+        });
+        wrap.appendChild(el);
+      });
+      g.appendChild(wrap);
+      host.appendChild(g);
+    });
+  }
 
-/* ---------- modal ---------- */
-.modal{
-  position:fixed;inset:0;background:rgba(20,36,56,.34);backdrop-filter:blur(2px);
-  display:grid;place-items:center;padding:20px;z-index:50;
-}
-.modalcard{
-  width:min(600px,100%);max-height:88vh;overflow-y:auto;background:#fff;border-radius:14px;
-  border:1px solid var(--line);box-shadow:0 24px 70px rgba(17,38,66,.25);padding:22px 24px;
-  animation:modin .2s ease-out;
-}
-@keyframes modin{from{opacity:0;transform:translateY(10px) scale(.99)}to{opacity:1;transform:none}}
-.modalcard h3{font-size:19px;color:var(--ink);margin-bottom:3px}
-.modalcard .sub{font-size:11.5px;color:var(--muted)}
-.modalcard p{font-size:12.8px;line-height:1.7;color:var(--body);margin-top:10px}
-.modalcard ul{margin:10px 0 0;padding-left:18px}
-.modalcard li{font-size:12.5px;line-height:1.75;color:var(--body)}
-.modalcard .mact{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
-.modalcard .mact button{border-radius:8px;padding:8px 15px;font-size:12.5px;cursor:pointer;border:1px solid var(--line2);background:#fff;color:#59708A}
-.modalcard .mact .primary{border-color:var(--blue);background:var(--blue);color:#fff}
-.sumlist{display:flex;flex-direction:column;gap:5px;margin-top:12px}
-.sumrow{display:flex;align-items:center;gap:8px;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#FAFCFF;font-size:12px}
-.sumrow b{font-family:var(--mono);font-size:11px;color:#93A4B6}
-.sumrow span{flex:1;color:#4E657D}
-.sumrow em{font-style:normal;font-family:var(--mono);font-size:11px;color:var(--green)}
-.bigscore{display:flex;align-items:baseline;gap:6px;margin-top:14px}
-.bigscore b{font-family:var(--mono);font-size:38px;color:var(--blue);line-height:1}
-.bigscore span{font-size:12px;color:var(--muted)}
+  /* ============================================================
+     队列 / Queue
+     ============================================================ */
+  function addToQueue(id) {
+    var q = queue();
+    if (q.indexOf(id) >= 0 || st().applied.indexOf(id) >= 0) return;
+    q.push(id);
+    renderQueue();
+    msg("已加入队列，可调整顺序后执行 / Added to queue", "");
+  }
+  function renderQueue() {
+    var q = queue(), s = st();
+    var host = $("queue");
+    host.innerHTML = "";
+    if (!q.length) {
+      host.innerHTML = '<p class="empty">把命令拖进来 / Drop commands here</p>';
+    } else {
+      q.forEach(function (id, i) {
+        var b = tileById(id);
+        if (!b) return;
+        var r = document.createElement("div");
+        r.className = "qrow";
+        r.innerHTML = '<span class="qn">' + (i + 1) + '</span><span class="qdev devchip ' + DEV_CLASS[b.dev] + '">' +
+          b.dev + '</span><span class="qtx">' + esc(b.text) + '</span><span class="qa">' +
+          '<button type="button" data-act="up" data-i="' + i + '" title="上移">↑</button>' +
+          '<button type="button" data-act="down" data-i="' + i + '" title="下移">↓</button>' +
+          '<button type="button" class="del" data-act="del" data-i="' + i + '" title="移除">×</button></span>';
+        host.appendChild(r);
+      });
+    }
+    $("qcount").textContent = String(q.length);
+    var run = $("btnRun");
+    run.disabled = !q.length || S.animating || q.every(function (id) { return s.applied.indexOf(id) >= 0; });
+  }
 
-/* ---------- responsive ---------- */
-@media (max-width:1080px){
-  .workspace{grid-template-columns:1fr;overflow-y:auto;display:block}
-  body{overflow:auto}
-  .app{height:auto;min-height:100dvh}
-  .stage-col{height:auto}
-  .stagecard{height:440px}
-  .termcard{height:190px;margin-top:12px}
-  .panel{margin-top:12px;overflow:visible}
-  .railbtn{min-width:130px}
-  .brandtext h1 span{display:none}
-}
-@media (max-width:640px){
-  .topbar{padding:9px 12px;flex-wrap:wrap}
-  .brandtext h1{font-size:16px}
-  .brandtext p{display:none}
-  .topactions{margin-left:auto}
-  .ghost{padding:6px 9px;font-size:11.5px}
-  .scorebox b{font-size:17px}
-  .rail{padding:6px 10px}
-  .railbtn{min-width:112px}
-  .railbtn .lab i{display:none}
-  .workspace{padding:10px 11px 14px}
-  .stagecard{height:360px}
-  .pingtools{margin-left:0;width:100%;justify-content:flex-start}
-  .cardhead{flex-wrap:wrap}
-}
-@media print{
-  body{overflow:visible;background:#fff}
-  .app,.modal .mact{display:none!important}
-  .modal{position:static;background:#fff;padding:0;display:block}
-  .modalcard{box-shadow:none;border:0;max-height:none;width:100%}
-}
+  /* ============================================================
+     执行 / Execute
+     ============================================================ */
+  function linesOf(tile, s) {
+    return typeof tile.lines === "function" ? tile.lines(s) : tile.lines;
+  }
+  function runQueue() {
+    if (S.animating) return;
+    var t = task(), s = st();
+    var q = queue().slice();
+    if (!q.length) { msg("先加入命令 / Add commands first", "bad"); return; }
+    var applied = [], failed = false;
+    for (var i = 0; i < q.length; i++) {
+      var tile = tileById(q[i]);
+      if (!tile) continue;
+      var err = tile.pre ? tile.pre(s) : null;
+      if (err) {
+        log("err", "Error: " + err);
+        failed = true;
+        break;
+      }
+      linesOf(tile, s).forEach(function (ln) { log("cmd", ln[0], ln[1]); });
+      tile.run(s);
+      s.applied.push(tile.id);
+      applied.push(tile.id);
+    }
+    S.queues[t.id] = q.filter(function (id) { return applied.indexOf(id) < 0; });
+    S.results[t.id] = null;
+    renderBank();
+    renderQueue();
+    renderSteps();
+    renderReport();
+    draw();
+    if (failed) {
+      msg("执行中断：按提示调整顺序或补充前置命令 / Fix the error and retry", "bad");
+    } else {
+      log("ok", "// 已下发 " + applied.length + " 条命令 / " + applied.length + " commands applied");
+      msg("命令已下发，点击「验证」检查结果 / Verify when ready", "ok");
+    }
+    if (!queue().length) $("btnRun").disabled = true;
+  }
+
+  /* ============================================================
+     验证 / Verify
+     ============================================================ */
+  function renderReport() {
+    var t = task();
+    var res = S.results[t.id];
+    var host = $("report");
+    host.innerHTML = "";
+    var pass = 0;
+    t.checks.forEach(function (c, i) {
+      var state = res ? (res[i] ? "pass" : "fail") : "";
+      if (res && res[i]) pass++;
+      var d = document.createElement("div");
+      d.className = "rrow " + state;
+      d.innerHTML = '<span class="rnum">' + (res ? (res[i] ? "✓" : "×") : i + 1) + '</span><span class="rtxt"><b>' +
+        esc(c.zh) + "</b><i>" + esc(c.en) + '</i></span><span class="rstate">' +
+        (res ? (res[i] ? "通过" : "未过") : "待验证") + "</span>";
+      host.appendChild(d);
+    });
+    $("rcount").textContent = (res ? pass : 0) + " / " + t.checks.length;
+  }
+  function verify() {
+    if (S.animating) return;
+    var t = task(), s = st();
+    var res = {};
+    var pass = 0;
+    t.checks.forEach(function (c, i) {
+      var ok = !!c.test(s);
+      res[i] = ok;
+      if (ok) pass++;
+    });
+    S.results[t.id] = res;
+    t.verify(s).forEach(function (l) { log(l[0], l[1], l[2]); });
+    renderReport();
+    if (pass === t.checks.length) {
+      log("ok", "// 全部检查通过 / All checks passed");
+      msg("验证通过：本任务完成 / Task complete", "ok");
+      markDone(t);
+      hud("任务 " + t.no + " 完成：" + t.zh + " / Task complete", "good");
+    } else {
+      msg("通过 " + pass + " / " + t.checks.length + "，继续完善配置 / Keep going", "warn");
+      hud("还有 " + (t.checks.length - pass) + " 项未通过，查看右侧清单 / " + (t.checks.length - pass) + " checks failed", "bad");
+    }
+    reportEl().scrollIntoView({ behavior: "smooth", block: "nearest" });
+    draw();
+  }
+  function markDone(t) {
+    if (S.progress.done[t.id]) { renderRail(); return; }
+    S.progress.done[t.id] = true;
+    saveProgress();
+    renderRail();
+    if (doneCount() === TASKS.length) {
+      setTimeout(showResult, 900);
+    }
+  }
+
+  /* ============================================================
+     提示 / Hint
+     ============================================================ */
+  function hint() {
+    var t = task(), s = st();
+    var step = S.hint[t.id] || 0;
+    S.hint[t.id] = (step + 1) % 3;
+    var next = t.bank.filter(function (b) { return s.applied.indexOf(b.id) < 0; })[0];
+    if (step === 0) {
+      msg("思路：" + t.steps[0].zh + "；命令按设备分组，注意选中正确的设备。", "warn");
+    } else if (step === 1) {
+      msg(next ? "下一步：在 " + next.dev + " 上执行「" + next.text + "」/ Next: " + next.text : "命令已全部下发，点「验证」查看结果。", "warn");
+    } else {
+      var checks = t.checks.filter(function (c, i) {
+        var r = S.results[t.id];
+        return !r || !r[i];
+      });
+      msg(checks.length ? "未通过项：" + checks[0].zh + "（" + checks[0].en + "）" : "全部通过，点击「验证」完成任务。", "warn");
+    }
+  }
+
+  /* ============================================================
+     消息 / HUD
+     ============================================================ */
+  function msg(text, kind) {
+    var el = $("msg");
+    el.textContent = text;
+    el.className = "msg " + (kind || "");
+  }
+  function reportEl() { return document.querySelector(".reportcard"); }
+  function hud(text, kind) {
+    var el = $("hud");
+    el.hidden = false;
+    el.textContent = text;
+    el.className = "hud " + (kind || "");
+  }
+
+  /* ============================================================
+     画布 / Topology canvas
+     ============================================================ */
+  function nsize(n) {
+    if (n.type === "pc") return { w: 132, h: 84 };
+    if (n.type === "cloud") return { w: 172, h: 92 };
+    if (n.type === "switch") return { w: 148, h: 98 };
+    return { w: 154, h: 98 };
+  }
+  function roundRect(c, x, y, w, h, r) {
+    c.beginPath();
+    c.moveTo(x + r, y);
+    c.arcTo(x + w, y, x + w, y + h, r);
+    c.arcTo(x + w, y + h, x, y + h, r);
+    c.arcTo(x, y + h, x, y, r);
+    c.arcTo(x, y, x + w, y, r);
+    c.closePath();
+  }
+  function fit() {
+    var wrap = $("canvasWrap");
+    if (!wrap) return;
+    var r = wrap.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    var dpr = Math.min(2, window.devicePixelRatio || 1);
+    cv.width = Math.round(r.width * dpr);
+    cv.height = Math.round(r.height * dpr);
+    view.dpr = dpr;
+    view.scale = Math.min(r.width / VW, r.height / VH) * 0.96;
+    view.ox = (r.width - VW * view.scale) / 2;
+    view.oy = (r.height - VH * view.scale) / 2;
+    draw();
+  }
+  function anchor(n, tx, ty) {
+    var sz = nsize(n);
+    var dx = tx - n.x, dy = ty - n.y;
+    if (!dx && !dy) return { x: n.x, y: n.y };
+    var sx = dx === 0 ? Infinity : (sz.w / 2) / Math.abs(dx);
+    var sy = dy === 0 ? Infinity : (sz.h / 2) / Math.abs(dy);
+    var k = Math.min(sx, sy);
+    return { x: n.x + dx * k, y: n.y + dy * k };
+  }
+  function ipsLine(n) {
+    if (n.type === "pc") return "";
+    if (n.type === "cloud") return "";
+    var s = st();
+    if (n.id === "SW") {
+      var sw = s.vlan.SW;
+      if (sw && sw.created.length) return "VLAN " + sw.created.join(" / ");
+      return "未划分 VLAN";
+    }
+    var list = [];
+    var ifs = s.iface[n.id] || {};
+    Object.keys(ifs).forEach(function (p) { list.push(ifs[p].split("/")[0]); });
+    (s.sub[n.id] || []).forEach(function (x) { if (x.ip) list.push(x.ip.split("/")[0]); });
+    if (!list.length) return "未配置接口";
+    return list.slice(0, 2).join(" · ") + (list.length > 2 ? " …" : "");
+  }
+  function draw() {
+    if (!ctx) return;
+    var t = task(), s = st();
+    var W = cv.width / view.dpr, H = cv.height / view.dpr;
+    ctx.setTransform(view.dpr, 0, 0, view.dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    if (!t.topo) return;
+    ctx.setTransform(view.dpr * view.scale, 0, 0, view.dpr * view.scale, view.dpr * view.ox, view.dpr * view.oy);
+
+    /* canvas header */
+    ctx.textAlign = "left";
+    ctx.textBaseline = "alphabetic";
+    ctx.fillStyle = "#9AA8B8";
+    ctx.font = "14px Microsoft YaHei, system-ui, sans-serif";
+    ctx.fillText("GlobalTech · 企业网络路由部署 / Enterprise Routing Deployment", 26, 32);
+    ctx.fillStyle = "#22364D";
+    ctx.font = "700 20px Microsoft YaHei, system-ui, sans-serif";
+    ctx.fillText("任务 " + (t.no < 10 ? "0" + t.no : t.no) + " · " + t.zh, 26, 58);
+
+    /* zones */
+    if (t.topo.zones) {
+      t.topo.zones.forEach(function (z) {
+        ctx.save();
+        roundRect(ctx, z.x, z.y, z.w, z.h, 18);
+        ctx.fillStyle = z.color + "0D";
+        ctx.fill();
+        ctx.setLineDash([7, 6]);
+        ctx.strokeStyle = z.color + "66";
+        ctx.lineWidth = 1.6;
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = z.color;
+        ctx.font = "600 16px Microsoft YaHei, system-ui, sans-serif";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "top";
+        ctx.fillText(z.label, z.x + 14, z.y + 11);
+        ctx.restore();
+      });
+    }
+
+    /* links */
+    t.topo.links.forEach(function (ln) {
+      var a = nodeById(ln.a), b = nodeById(ln.b);
+      var pa = anchor(a, b.x, b.y), pb = anchor(b, a.x, a.y);
+      ctx.save();
+      ctx.strokeStyle = "#CFDCEA";
+      ctx.lineWidth = 2.6;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(pa.x, pa.y);
+      ctx.lineTo(pb.x, pb.y);
+      ctx.stroke();
+      ctx.restore();
+
+      /* subnet label — lifted above the device row to avoid overlap */
+      var mx = (pa.x + pb.x) / 2, my = (pa.y + pb.y) / 2;
+      var horizontal = Math.abs(pb.x - pa.x) >= Math.abs(pb.y - pa.y);
+      var lx, ly;
+      if (horizontal) {
+        lx = mx;
+        ly = my - 78;
+      } else {
+        lx = mx - 84;
+        ly = my - 2;
+      }
+      ctx.font = "15px Consolas, monospace";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      var tw = ctx.measureText(ln.net).width;
+      if (horizontal) {
+        ctx.save();
+        ctx.setLineDash([4, 5]);
+        ctx.strokeStyle = "#E3EBF4";
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(mx, my - 64);
+        ctx.lineTo(mx, my - 9);
+        ctx.stroke();
+        ctx.restore();
+      }
+      ctx.save();
+      roundRect(ctx, lx - tw / 2 - 8, ly - 12, tw + 16, 24, 7);
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fill();
+      ctx.strokeStyle = "#E1E9F2";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.restore();
+      ctx.fillStyle = "#7E90A4";
+      ctx.fillText(ln.net, lx, ly + 1);
+    });
+
+    /* active path highlight */
+    if (anim) {
+      for (var i = 0; i < anim.segs.length; i++) {
+        var sg = anim.segs[i];
+        var qa = anchor(sg.a, sg.b.x, sg.b.y), qb = anchor(sg.b, sg.a.x, sg.a.y);
+        ctx.save();
+        ctx.strokeStyle = anim.ok ? "rgba(47,111,235,.20)" : "rgba(194,75,75,.16)";
+        ctx.lineWidth = 9;
+        ctx.lineCap = "round";
+        ctx.beginPath();
+        ctx.moveTo(qa.x, qa.y);
+        ctx.lineTo(qb.x, qb.y);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+
+    /* nodes */
+    t.topo.nodes.forEach(function (n) {
+      var sz = nsize(n);
+      var x = n.x - sz.w / 2, y = n.y - sz.h / 2;
+      var accent = n.accent || (n.type === "router" ? "#2F6FEB" : n.type === "switch" ? "#0F7E7E" : n.type === "cloud" ? "#6D7F93" : "#6D7F93");
+      ctx.save();
+      ctx.shadowColor = "rgba(17,38,66,.07)";
+      ctx.shadowBlur = 12;
+      ctx.shadowOffsetY = 3;
+      roundRect(ctx, x, y, sz.w, sz.h, 15);
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fill();
+      ctx.restore();
+      roundRect(ctx, x, y, sz.w, sz.h, 15);
+      ctx.strokeStyle = "#D8E2EE";
+      ctx.lineWidth = 1.4;
+      ctx.stroke();
+
+      /* icon bubble */
+      var bx = x + 33, by = n.type === "pc" ? n.y : n.y - 17;
+      ctx.beginPath();
+      ctx.arc(bx, by, 19, 0, Math.PI * 2);
+      ctx.fillStyle = accent + "14";
+      ctx.fill();
+      ctx.strokeStyle = accent + "33";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      drawIcon(n.type, bx, by, accent);
+
+      /* label */
+      ctx.textAlign = "left";
+      ctx.textBaseline = "alphabetic";
+      ctx.fillStyle = "#22364D";
+      ctx.font = "700 25px Microsoft YaHei, system-ui, sans-serif";
+      if (n.type === "pc") {
+        ctx.fillText(n.label, x + 59, n.y - 6);
+        ctx.fillStyle = "#8194A8";
+        ctx.font = "13.5px Consolas, monospace";
+        ctx.fillText(n.sub, x + 59, n.y + 18);
+      } else {
+        ctx.fillText(n.label, x + 59, n.y - 8);
+        ctx.fillStyle = "#8194A8";
+        ctx.font = "13.5px Consolas, monospace";
+        ctx.fillText(n.sub, x + 59, n.y + 13);
+        var line = ipsLine(n);
+        if (line) {
+          ctx.textAlign = "center";
+          ctx.fillStyle = n.id === "SW" ? "#8A6414" : "#5E7188";
+          ctx.font = "13px Consolas, monospace";
+          ctx.fillText(line, n.x, y + sz.h - 13, sz.w - 18);
+        }
+      }
+
+      /* badge */
+      if (n.badge) {
+        ctx.font = "600 11.5px Microsoft YaHei, system-ui, sans-serif";
+        var bw = ctx.measureText(n.badge).width + 14;
+        roundRect(ctx, x + sz.w - bw - 8, y + 8, bw, 20, 9);
+        ctx.fillStyle = "#EEF4FE";
+        ctx.fill();
+        ctx.strokeStyle = "#D6E4FA";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.fillStyle = "#2F6FEB";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(n.badge, x + sz.w - bw / 2 - 8, y + 18.5);
+      }
+    });
+
+    /* packet */
+    if (anim) drawPacket();
+
+    /* bottom hint */
+    /* bottom legend + hint */
+    ctx.textAlign = "left";
+    ctx.textBaseline = "alphabetic";
+    ctx.fillStyle = "#93A4B6";
+    ctx.font = "13px Microsoft YaHei, system-ui, sans-serif";
+    ctx.fillText(t.legend.join("     ·     "), 22, VH - 42);
+    ctx.fillStyle = "#A9B6C5";
+    ctx.fillText("点击右上角按钮发送测试包，观察数据包路径 / Send a test packet to trace the path", 22, VH - 16);
+  }
+  function drawIcon(type, x, y, color) {
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = 1.7;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    if (type === "router") {
+      ctx.beginPath();
+      ctx.moveTo(x - 9, y - 5); ctx.lineTo(x + 9, y - 5);
+      ctx.moveTo(x + 5, y - 9); ctx.lineTo(x + 9, y - 5); ctx.lineTo(x + 5, y - 1);
+      ctx.moveTo(x + 9, y + 6); ctx.lineTo(x - 9, y + 6);
+      ctx.moveTo(x - 5, y + 2); ctx.lineTo(x - 9, y + 6); ctx.lineTo(x - 5, y + 10);
+      ctx.stroke();
+    } else if (type === "switch") {
+      [-1, 1].forEach(function (sx) {
+        [-1, 1].forEach(function (sy) {
+          ctx.strokeRect(x + sx * 6 - 4, y + sy * 5 - 3.5, 7, 7);
+        });
+      });
+    } else if (type === "pc") {
+      ctx.strokeRect(x - 9, y - 7, 18, 12);
+      ctx.beginPath();
+      ctx.moveTo(x - 4, y + 9); ctx.lineTo(x + 4, y + 9);
+      ctx.moveTo(x, y + 5); ctx.lineTo(x, y + 9);
+      ctx.stroke();
+    } else {
+      ctx.beginPath();
+      ctx.arc(x - 5, y + 2, 6, Math.PI * 0.5, Math.PI * 1.5);
+      ctx.arc(x - 1, y - 4, 8, Math.PI, Math.PI * 1.9);
+      ctx.arc(x + 7, y + 2, 5, Math.PI * 1.4, Math.PI * 0.5);
+      ctx.closePath();
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+  function drawPacket() {
+    var seg = anim.segs[anim.seg];
+    if (!seg) return;
+    var pa = anchor(seg.a, seg.b.x, seg.b.y), pb = anchor(seg.b, seg.a.x, seg.a.y);
+    var x = pa.x + (pb.x - pa.x) * anim.p;
+    var y = pa.y + (pb.y - pa.y) * anim.p;
+    var color = anim.ok ? "#2F6FEB" : "#C24B4B";
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x, y, 13, 0, Math.PI * 2);
+    ctx.fillStyle = color + "1F";
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(x, y, 6.5, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.strokeStyle = "#fff";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    var tag = anim.tag(anim.seg);
+    if (tag) {
+      ctx.font = "600 13px Consolas, monospace";
+      var tw = ctx.measureText(tag).width;
+      var tx = x + 16, ty = y - 24;
+      roundRect(ctx, tx, ty, tw + 14, 21, 8);
+      ctx.fillStyle = "rgba(255,255,255,.95)";
+      ctx.fill();
+      ctx.strokeStyle = color + "44";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.fillStyle = color;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillText(tag, tx + 7, ty + 11);
+    }
+    if (anim.done && !anim.ok) {
+      ctx.strokeStyle = "#C24B4B";
+      ctx.lineWidth = 3;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(x - 9, y - 9); ctx.lineTo(x + 9, y + 9);
+      ctx.moveTo(x + 9, y - 9); ctx.lineTo(x - 9, y + 9);
+      ctx.stroke();
+    }
+    if (anim.done && anim.ok) {
+      ctx.beginPath();
+      ctx.arc(x, y, 18 + Math.sin(Date.now() / 160) * 2, 0, Math.PI * 2);
+      ctx.strokeStyle = "rgba(24,138,94,.5)";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  /* ============================================================
+     数据包动画 / Packet animation
+     ============================================================ */
+  function animatePath(ids, ok) {
+    return new Promise(function (resolve) {
+      var segs = [];
+      for (var i = 0; i < ids.length - 1; i++) {
+        segs.push({ a: nodeById(ids[i]), b: nodeById(ids[i + 1]) });
+      }
+      if (!segs.length) { resolve(); return; }
+      var DUR = 560, GAP = 110;
+      var start = performance.now();
+      var t = task();
+      anim = {
+        segs: segs, seg: 0, p: 0, ok: ok, done: false,
+        tag: function (i) {
+          if (t.id === "t5") {
+            if (i <= 1) return "802.1Q · VID 10";
+            if (i === 2) return "802.1Q · VID 20";
+            return "Untagged";
+          }
+          return "ICMP";
+        }
+      };
+      function frame(now) {
+        var el = now - start;
+        var per = DUR + GAP;
+        var idx = Math.max(0, Math.min(segs.length - 1, Math.floor(el / per)));
+        var local = (el - idx * per) / DUR;
+        if (local > 1) local = 1;
+        if (local < 0) local = 0;
+        anim.seg = idx;
+        anim.p = local;
+        draw();
+        if (el < segs.length * per - GAP) {
+          requestAnimationFrame(frame);
+        } else {
+          anim.done = true;
+          anim.p = 1;
+          draw();
+          setTimeout(function () {
+            anim = null;
+            draw();
+            resolve();
+          }, 900);
+        }
+      }
+      requestAnimationFrame(frame);
+    });
+  }
+
+  /* ============================================================
+     发送测试包 / Ping
+     ============================================================ */
+  function renderPingTools() {
+    var t = task();
+    var host = $("pingtools");
+    host.innerHTML = "";
+    (t.pings || []).forEach(function (p) {
+      var b = document.createElement("button");
+      b.className = "pingbtn";
+      b.setAttribute("data-id", p.id);
+      b.innerHTML = '<svg viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M2 1.4v9.2c0 .5.5.8.9.5l7-4.6a.6.6 0 0 0 0-1L2.9.9a.6.6 0 0 0-.9.5Z"/></svg>' + esc(p.label);
+      b.addEventListener("click", function () { doPing(p.id); });
+      host.appendChild(b);
+    });
+    updatePingButtons();
+  }
+  function updatePingButtons() {
+    var btns = $("pingtools").querySelectorAll(".pingbtn");
+    for (var i = 0; i < btns.length; i++) btns[i].disabled = S.animating;
+  }
+  function doPing(pid) {
+    if (S.animating) return;
+    var t = task(), s = st();
+    var p = (t.pings || []).filter(function (x) { return x.id === pid; })[0];
+    if (!p) return;
+    var info = p.run(s);
+    S.animating = true;
+    updatePingButtons();
+    renderQueue();
+    log("cmd", "<PC1>", p.cmd);
+    hud("数据包发送中… / Sending packet…", "");
+    animatePath(info.path, info.ok).then(function () {
+      if (info.ok) {
+        log("ok", "Reply received：链路可达 / Path is reachable");
+        log("note", info.reason);
+        hud(info.reason, "good");
+      } else {
+        log("err", "Request timeout!");
+        log("note", info.reason);
+        hud(info.reason, "bad");
+      }
+      S.animating = false;
+      s.pinged[t.id] = true;
+      updatePingButtons();
+      renderQueue();
+      renderSteps();
+      renderReport();
+    });
+  }
+
+  /* ============================================================
+     渲染总入口 / Render all
+     ============================================================ */
+  function renderAll() {
+    renderRail();
+    renderTaskCard();
+    renderBank();
+    renderQueue();
+    renderReport();
+    renderPingTools();
+    fit();
+  }
+
+  /* ============================================================
+     弹窗 / Modals
+     ============================================================ */
+  function openModal(html) {
+    $("modalcard").innerHTML = html;
+    $("modal").hidden = false;
+  }
+  function closeModal() { $("modal").hidden = true; }
+
+  function showGuide() {
+    openModal(
+      '<h3>实验说明 <span style="font-size:12px;color:#7B8B9E;font-weight:400">Lab Guide</span></h3>' +
+      '<p>本仿真对应《项目四 企业网络路由部署与优化》的 5 个任务，采用华为 VRP 命令风格，所有配置只在本页面内生效。</p>' +
+      '<ul>' +
+      '<li>从右侧「命令库」点击或拖拽命令，加入「执行队列」；可用 ↑ ↓ × 调整顺序。</li>' +
+      '<li>命令按设备分组（R1 / R2 / R3 / SW），前置条件不满足时会给出提示并中断执行。</li>' +
+      '<li>点击「执行」下发命令，点击「验证」运行 display / ping 检查并生成清单。</li>' +
+      '<li>右上角「发送测试包」可查看数据包在拓扑中的实际路径与失败位置。</li>' +
+      '<li>每个任务 5–7 项检查全部通过即完成，总分 100 分，进度保存在本机浏览器。</li>' +
+      '</ul>' +
+      '<p style="color:#7B8B9E;font-size:11.5px">建议顺序：任务一 → 任务二 → 任务三 → 任务四 → 任务五，任务五综合性最强。</p>' +
+      '<div class="mact"><button data-close="1">知道了 Close</button></div>'
+    );
+  }
+  function showResult() {
+    var total = doneCount() * 20;
+    var rows = TASKS.map(function (t) {
+      var d = S.progress.done[t.id];
+      return '<div class="sumrow"><b>T' + t.no + '</b><span>' + esc(t.zh) + "</span><em>" + (d ? "完成 20" : "未完成") + "</em></div>";
+    }).join("");
+    openModal(
+      '<h3>实验完成 <span style="font-size:12px;color:#7B8B9E;font-weight:400">Experiment Completed</span></h3>' +
+      '<p>已完成 GlobalTech 企业网络路由部署的 5 个任务：从直连路由认知，到静态路由、RIP、OSPF，最后用单臂路由打通 VLAN。</p>' +
+      '<div class="bigscore"><b>' + total + '</b><span>/ 100 分</span></div>' +
+      '<div class="sumlist">' + rows + "</div>" +
+      '<div class="mact"><button data-close="1">关闭 Close</button><button class="primary" data-print="1">打印报告 Print</button></div>'
+    );
+  }
+
+  /* ============================================================
+     事件绑定 / Bindings
+     ============================================================ */
+  function bind() {
+    $("btnRun").addEventListener("click", runQueue);
+    $("btnVerify").addEventListener("click", verify);
+    $("btnHint").addEventListener("click", hint);
+    $("btnGuide").addEventListener("click", showGuide);
+    $("btnClearTerm").addEventListener("click", function () {
+      S.logs[task().id] = [];
+      renderTerm();
+    });
+    $("btnClearQ").addEventListener("click", function () {
+      S.queues[task().id] = [];
+      renderQueue();
+    });
+    $("btnResetTask").addEventListener("click", function () {
+      var t = task();
+      S.states[t.id] = fresh(t);
+      S.queues[t.id] = [];
+      S.logs[t.id] = [];
+      S.results[t.id] = null;
+      S.hint[t.id] = 0;
+      $("hud").hidden = true;
+      renderAll();
+      welcome(t);
+      renderTerm();
+      msg("本任务已重置 / Task reset", "");
+    });
+    $("btnResetAll").addEventListener("click", function () {
+      if (!window.confirm("重置全部任务与得分？/ Reset all progress?")) return;
+      try { localStorage.removeItem(STORE); } catch (e) {}
+      window.location.reload();
+    });
+
+    $("queue").addEventListener("click", function (e) {
+      var btn = e.target.closest ? e.target.closest("button[data-act]") : null;
+      if (!btn) return;
+      var q = queue();
+      var i = Number(btn.getAttribute("data-i"));
+      var act = btn.getAttribute("data-act");
+      if (act === "del") q.splice(i, 1);
+      if (act === "up" && i > 0) q.splice(i - 1, 0, q.splice(i, 1)[0]);
+      if (act === "down" && i < q.length - 1) q.splice(i + 1, 0, q.splice(i, 1)[0]);
+      renderQueue();
+    });
+    var qbox = $("queue");
+    qbox.addEventListener("dragover", function (e) {
+      e.preventDefault();
+      qbox.classList.add("drop");
+    });
+    qbox.addEventListener("dragleave", function () { qbox.classList.remove("drop"); });
+    qbox.addEventListener("drop", function (e) {
+      e.preventDefault();
+      qbox.classList.remove("drop");
+      var id = e.dataTransfer.getData("text/plain");
+      if (id) addToQueue(id);
+    });
+
+    $("modal").addEventListener("click", function (e) {
+      if (e.target === $("modal")) { closeModal(); return; }
+      if (e.target.getAttribute && e.target.getAttribute("data-close")) { closeModal(); return; }
+      if (e.target.getAttribute && e.target.getAttribute("data-print")) { window.print(); }
+    });
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") closeModal();
+    });
+    window.addEventListener("resize", fit);
+    if (window.ResizeObserver) {
+      new ResizeObserver(function () { fit(); }).observe($("canvasWrap"));
+    }
+  }
+
+  /* ============================================================
+     启动 / Init
+     ============================================================ */
+  function init() {
+    cv = $("topo");
+    ctx = cv.getContext("2d");
+    bind();
+    var first = 0;
+    for (var i = 0; i < TASKS.length; i++) {
+      if (!S.progress.done[TASKS[i].id]) { first = i; break; }
+    }
+    S.ti = first;
+    renderAll();
+    welcome(task());
+    renderTerm();
+    setTimeout(fit, 60);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+
