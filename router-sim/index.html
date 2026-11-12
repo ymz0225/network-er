@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#F2F6FB">
+<title>企业网络路由虚拟仿真 · Routing Virtual Lab</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2.5" y="13" width="7" height="6" rx="1.4"></rect>
+          <rect x="14.5" y="13" width="7" height="6" rx="1.4"></rect>
+          <rect x="8.5" y="3.5" width="7" height="6" rx="1.4"></rect>
+          <path d="M12 9.5v3.5M6 13v-2.2h12V13"></path>
+        </svg>
+      </div>
+      <div class="brandtext">
+        <h1>企业网络路由虚拟仿真 <span>Routing Virtual Lab</span></h1>
+        <p>项目四 · 企业网络路由部署与优化 / GlobalTech Enterprise Network</p>
+      </div>
+    </div>
+    <div class="topactions">
+      <div class="scorebox">
+        <span>总得分 Score</span>
+        <b id="score">0</b><em>/ 100</em>
+      </div>
+      <button class="ghost" id="btnGuide">实验说明 Guide</button>
+      <button class="ghost" id="btnResetAll">重置 Reset</button>
+    </div>
+  </header>
+
+  <nav class="rail" id="rail" aria-label="任务导航"></nav>
+
+  <main class="workspace">
+    <section class="stage-col">
+      <div class="card stagecard">
+        <div class="cardhead">
+          <span class="dot"></span>
+          <span class="ch-zh">网络拓扑</span><span class="ch-en">Network Topology</span>
+          <div class="pingtools" id="pingtools"></div>
+        </div>
+        <div class="canvas-wrap" id="canvasWrap">
+          <canvas id="topo"></canvas>
+          <div class="hud" id="hud" hidden></div>
+        </div>
+      </div>
+      <div class="card termcard">
+        <div class="termhead">
+          <span class="tdot"></span><span class="tdot"></span><span class="tdot"></span>
+          <span class="termtitle">CLI 终端 · eNSP console</span>
+          <button class="termclear" id="btnClearTerm">清屏 Clear</button>
+        </div>
+        <div class="termout" id="term"></div>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <div class="card taskcard">
+        <div class="tasktop">
+          <span class="taskno" id="taskno">任务 01</span>
+          <span class="tasktag" id="tasktag">Foundation</span>
+          <button class="linkbtn reset-task" id="btnResetTask">重置本任务</button>
+        </div>
+        <h2 id="tasktitle">路由原理认知</h2>
+        <p class="ten" id="tasken">Routing Principles</p>
+        <p class="tintro" id="taskintro"></p>
+        <div class="steps" id="steps"></div>
+      </div>
+
+      <div class="card buildcard">
+        <div class="cardhead slim">
+          <span class="ch-zh">命令库</span><span class="ch-en">Command Bank</span>
+          <span class="bankhint">点击或拖入队列</span>
+        </div>
+        <div class="bank" id="bank"></div>
+        <div class="qhead">
+          <span>执行队列 Queue <i id="qcount">0</i></span>
+          <button class="linkbtn" id="btnClearQ">清空</button>
+        </div>
+        <div class="queue" id="queue"></div>
+        <div class="actions">
+          <button class="primary" id="btnRun" disabled>执行 Execute</button>
+          <button class="verify" id="btnVerify">验证 Verify</button>
+          <button class="ghost" id="btnHint">提示 Hint</button>
+        </div>
+        <div class="msg" id="msg"></div>
+      </div>
+
+      <div class="card reportcard">
+        <div class="cardhead slim">
+          <span class="ch-zh">验证清单</span><span class="ch-en">Checklist</span>
+          <span class="rcount" id="rcount">0 / 0</span>
+        </div>
+        <div class="report" id="report"></div>
+      </div>
+    </aside>
+  </main>
+</div>
+
+<div class="modal" id="modal" hidden>
+  <div class="modalcard" id="modalcard"></div>
+</div>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
