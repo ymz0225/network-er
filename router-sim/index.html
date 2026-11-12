@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#F2F6FB">
-<title>企业网络路由虚拟仿真 · Routing Virtual Lab</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232F6FEB'/%3E%3Cpath d='M8 20h6v5H8zM18 20h6v5h-6zM13 7h6v5h-6zM16 12v4M11 16h10v4' fill='none' stroke='white' stroke-width='1.8'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="assets/style.css">
+<meta name="theme-color" content="#050B14">
+<title>GlobalTech 路由数字孪生实验室 · Routing Digital Twin Lab</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23081220'/%3E%3Cpath d='M16 4 27 10v12L16 28 5 22V10z' fill='none' stroke='%234FE3FF' stroke-width='1.6'/%3E%3Cpath d='M16 10v12M10 13.5l6 3.5 6-3.5' stroke='%234FE3FF' stroke-width='1.4'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/style.css?v=3d1">
 </head>
 <body>
 <div class="app">
@@ -14,91 +14,120 @@
   <header class="topbar">
     <div class="brand">
       <div class="logo" aria-hidden="true">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="2.5" y="13" width="7" height="6" rx="1.4"></rect>
-          <rect x="14.5" y="13" width="7" height="6" rx="1.4"></rect>
-          <rect x="8.5" y="3.5" width="7" height="6" rx="1.4"></rect>
-          <path d="M12 9.5v3.5M6 13v-2.2h12V13"></path>
+        <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M16 3.5 28 10v12L16 28.5 4 22V10z"></path>
+          <path d="M16 10.5v11M9.5 14l6.5 3.8L22.5 14"></path>
+          <circle cx="16" cy="16" r="2.2" fill="currentColor" stroke="none"></circle>
         </svg>
       </div>
-      <div class="brandtext">
-        <h1>企业网络路由虚拟仿真 <span>Routing Virtual Lab</span></h1>
-        <p>项目四 · 企业网络路由部署与优化 / GlobalTech Enterprise Network</p>
+      <div class="brandtxt">
+        <h1>GLOBALTECH <span>ROUTING DIGITAL TWIN LAB</span></h1>
+        <p>企业网络路由虚拟仿真平台 <em>·</em> 项目四 企业网络路由部署与优化</p>
       </div>
     </div>
-    <div class="topactions">
-      <div class="scorebox">
-        <span>总得分 Score</span>
-        <b id="score">0</b><em>/ 100</em>
-      </div>
-      <button class="ghost" id="btnGuide">实验说明 Guide</button>
-      <button class="ghost" id="btnResetAll">重置 Reset</button>
+
+    <nav class="stepper" id="rail" aria-label="任务导航"></nav>
+
+    <div class="topright">
+      <div class="scorepill"><span>SCORE</span><b id="score">0</b><i>/100</i></div>
+      <button class="orbitbtn" id="btnGuide" title="实验说明 Guide">?</button>
+      <button class="orbitbtn" id="btnResetAll" title="重置实验 Reset">⟲</button>
     </div>
   </header>
 
-  <nav class="rail" id="rail" aria-label="任务导航"></nav>
+  <section class="missionbar">
+    <div class="mident">
+      <span class="eyebrow" id="missionNo">MISSION 01</span>
+      <span class="badge" id="tasktag">FOUNDATION</span>
+    </div>
+    <div class="mtitle">
+      <h2 id="tasktitle">路由原理认知</h2>
+      <p class="ten" id="tasken">ROUTING PRINCIPLES</p>
+    </div>
+    <p class="mbrief" id="taskintro"></p>
+    <div class="msteps" id="steps"></div>
+    <div class="mprog">
+      <div class="pfline"><span>PROGRESS</span><b id="progressText">0%</b></div>
+      <div class="pbar"><i id="progressBar"></i></div>
+    </div>
+    <button class="mreset" id="btnResetTask" title="重置本任务 / RESET MISSION">⟲</button>
+  </section>
 
-  <main class="workspace">
-    <section class="stage-col">
-      <div class="card stagecard">
-        <div class="cardhead">
-          <span class="dot"></span>
-          <span class="ch-zh">网络拓扑</span><span class="ch-en">Network Topology</span>
-          <div class="pingtools" id="pingtools"></div>
-        </div>
-        <div class="canvas-wrap" id="canvasWrap">
-          <canvas id="topo"></canvas>
-          <div class="hud" id="hud" hidden></div>
-        </div>
-      </div>
-      <div class="card termcard">
-        <div class="termhead">
-          <span class="tdot"></span><span class="tdot"></span><span class="tdot"></span>
-          <span class="termtitle">CLI 终端 · eNSP console</span>
-          <button class="termclear" id="btnClearTerm">清屏 Clear</button>
-        </div>
-        <div class="termout" id="term"></div>
-      </div>
-    </section>
+  <main class="lab">
+    <div class="viewport" id="viewport">
+      <canvas id="scene"></canvas>
+      <div class="vignette"></div>
+      <div class="labels" id="labels"></div>
 
-    <aside class="panel">
-      <div class="card taskcard">
-        <div class="tasktop">
-          <span class="taskno" id="taskno">任务 01</span>
-          <span class="tasktag" id="tasktag">Foundation</span>
-          <button class="linkbtn reset-task" id="btnResetTask">重置本任务</button>
-        </div>
-        <h2 id="tasktitle">路由原理认知</h2>
-        <p class="ten" id="tasken">Routing Principles</p>
-        <p class="tintro" id="taskintro"></p>
-        <div class="steps" id="steps"></div>
+      <div class="vp-top">
+        <span class="live"><i></i>LIVE DIGITAL TWIN</span>
+        <span class="vptask" id="sceneTask">MISSION 01 · ROUTING PRINCIPLES</span>
       </div>
 
-      <div class="card buildcard">
-        <div class="cardhead slim">
-          <span class="ch-zh">命令库</span><span class="ch-en">Command Bank</span>
-          <span class="bankhint">点击或拖入队列</span>
-        </div>
-        <div class="bank" id="bank"></div>
-        <div class="qhead">
-          <span>执行队列 Queue <i id="qcount">0</i></span>
-          <button class="linkbtn" id="btnClearQ">清空</button>
-        </div>
-        <div class="queue" id="queue"></div>
-        <div class="actions">
-          <button class="primary" id="btnRun" disabled>执行 Execute</button>
-          <button class="verify" id="btnVerify">验证 Verify</button>
-          <button class="ghost" id="btnHint">提示 Hint</button>
-        </div>
-        <div class="msg" id="msg"></div>
+      <div class="vptools">
+        <button id="btnViewReset" title="重置 3D 视角">重置视角</button>
+        <button id="btnFull" title="全屏">全屏</button>
       </div>
 
-      <div class="card reportcard">
-        <div class="cardhead slim">
-          <span class="ch-zh">验证清单</span><span class="ch-en">Checklist</span>
-          <span class="rcount" id="rcount">0 / 0</span>
-        </div>
-        <div class="report" id="report"></div>
+      <div class="pingbar" id="pingtools"></div>
+      <div class="scenerail">
+        <div class="legend" id="legend"></div>
+      </div>
+      <div class="camhint">拖拽旋转 · 滚轮缩放 · 点击设备查看状态</div>
+      <div class="hud" id="hud" hidden></div>
+      <div class="inspector" id="inspector" hidden></div>
+    </div>
+
+    <aside class="panel console" id="consolePanel">
+      <div class="tabs">
+        <button data-tab="cmd" class="on"><span>命令编排</span><i>COMMAND</i></button>
+        <button data-tab="term"><span>终端</span><i>CONSOLE</i></button>
+        <button data-tab="check"><span>校验</span><i>VALIDATE</i></button>
+      </div>
+
+      <div class="tabbody">
+        <section class="tab" id="tab-cmd">
+          <div class="bankhead"><span>命令库 <em>COMMAND BANK</em></span><b id="bankcount"></b></div>
+          <div class="bank" id="bank"></div>
+          <div class="dsblock">
+            <div class="dshead"><span>设备状态 <em>DEVICE STATUS</em></span></div>
+            <div class="dslist" id="devlist"></div>
+          </div>
+          <div class="telemetry">
+            <div><span>DEVICES</span><b id="telDev">0</b></div>
+            <div><span>LINKS</span><b id="telLinks">0</b></div>
+            <div><span>STATE</span><b id="telState">READY</b></div>
+          </div>
+          <div class="qhead">
+            <span>执行队列 <em>QUEUE</em> <b id="qcount">0</b></span>
+            <button id="btnClearQ">清空</button>
+          </div>
+          <div class="queue" id="queue"></div>
+          <div class="msg" id="msg"></div>
+        </section>
+
+        <section class="tab" id="tab-term" hidden>
+          <div class="termhead">
+            <span class="tdot"></span><span class="tdot"></span><span class="tdot"></span>
+            <span>CLI CONSOLE</span>
+            <button id="btnClearTerm">CLEAR</button>
+          </div>
+          <div class="termout" id="term"></div>
+        </section>
+
+        <section class="tab" id="tab-check" hidden>
+          <div class="checkhead">
+            <span>验证清单 <em>CHECKLIST</em></span><b id="rcount">0 / 0</b>
+          </div>
+          <div class="report" id="report"></div>
+          <div class="verifyhint" id="verifyhint">执行命令后点击「验证」，这里会显示每一项的检查结果。</div>
+        </section>
+      </div>
+
+      <div class="cactions">
+        <button class="btn-run" id="btnRun" disabled><span>执行</span><i>EXECUTE</i></button>
+        <button class="btn-verify" id="btnVerify"><span>验证</span><i>VALIDATE</i></button>
+        <button class="btn-hint" id="btnHint">提示</button>
       </div>
     </aside>
   </main>
@@ -108,7 +137,20 @@
   <div class="modalcard" id="modalcard"></div>
 </div>
 
-<script src="assets/data.js"></script>
-<script src="assets/app.js"></script>
+<div class="loading" id="loading">
+  <div class="loader">
+    <span class="ring r1"></span><span class="ring r2"></span><span class="ring r3"></span>
+    <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4">
+      <path d="M16 3.5 28 10v12L16 28.5 4 22V10z"></path>
+      <path d="M16 10.5v11M9.5 14l6.5 3.8L22.5 14"></path>
+    </svg>
+  </div>
+  <p>正在构建 3D 数字孪生场景</p>
+  <i>BUILDING DIGITAL TWIN ENVIRONMENT…</i>
+</div>
+
+<script src="assets/vendor/three.min.js?v=149"></script>
+<script src="assets/data.js?v=3d1"></script>
+<script src="assets/app.js?v=3d1"></script>
 </body>
 </html>

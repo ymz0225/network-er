@@ -494,7 +494,7 @@
           { id: "R2", type: "router", x: 545, y: 285, label: "R2", sub: "AR2220" },
           { id: "R3", type: "router", x: 760, y: 285, label: "R3", sub: "AR2220" },
           { id: "PC3", type: "pc", x: 920, y: 285, label: "PC3", sub: "192.168.3.10/24" },
-          { id: "PC2", type: "pc", x: 545, y: 462, label: "PC2", sub: "192.168.2.10/24" }
+          { id: "PC2", type: "pc", x: 655, y: 462, label: "PC2", sub: "192.168.2.10/24" }
         ],
         links: [
           { a: "PC1", b: "R1", net: "192.168.1.0/24", pa: "", pb: "G0/0/0" },
@@ -580,7 +580,7 @@
           { id: "R2", type: "router", x: 545, y: 285, label: "R2", sub: "AR2220", badge: "ABR" },
           { id: "R3", type: "router", x: 760, y: 285, label: "R3", sub: "AR2220", badge: "Area 1" },
           { id: "PC3", type: "pc", x: 920, y: 285, label: "PC3", sub: "192.168.3.10/24" },
-          { id: "PC2", type: "pc", x: 545, y: 462, label: "PC2", sub: "192.168.2.10/24" }
+          { id: "PC2", type: "pc", x: 655, y: 462, label: "PC2", sub: "192.168.2.10/24" }
         ],
         links: [
           { a: "PC1", b: "R1", net: "192.168.1.0/24", pa: "", pb: "G0/0/0" },
@@ -775,4 +775,5 @@
   global.TASKS = TASKS;
   global.RS_UTIL = { netOf: netOf, ipOnly: ipOnly };
 })(window);
+
 
